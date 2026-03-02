@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Histórico - LDX Play</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <style> body { background: #0a0a0f; font-family: 'Inter', sans-serif; color: #fff; } .font-display { font-family: 'Bebas Neue', sans-serif; } </style>
+</head>
+<body>
+  <header class="p-6 border-b border-gray-800">
+    <div class="container mx-auto flex items-center justify-between">
+      <a href="index.html" class="font-display text-3xl text-white hover:text-purple-400 transition-colors">LDX Play</a>
+      <a href="index.html" class="text-sm text-gray-400 hover:text-white">Voltar ao Início</a>
+    </div>
+  </header>
+
+  <main class="container mx-auto px-6 py-10">
+    <h1 class="font-display text-4xl mb-6">Histórico de Visualização</h1>
+    
+    <div id="history-list" class="space-y-4"></div>
+    <div id="empty-msg" class="hidden text-center text-gray-500 py-20">
+      <p class="text-lg">Você ainda não assistiu nada.</p>
+      <a href="index.html" class="text-purple-400 underline mt-2 inline-block">Explorar Catálogo</a>
+    </div>
+  </main>
+
+  <script>
+    const DB_KEY = 'ldxplay_db_v2';
+    function getDB() { return JSON.parse(localStorage.getItem(DB_KEY)) || { content: [], history: [] }; }
+    const db = getDB();
+    const container = document.getElementById('history-list');
+    const emptyMsg = document.getElementById('empty-msg');
+
+    if(db.history.length === 0) {
+      emptyMsg.classList.remove('hidden');
+    } else {
+      // Ordenar do mais recente para o mais antigo
+      const sortedHistory = [...db.history].reverse();
+
+      container.innerHTML = sortedHistory.map(h => {
+        const item = db.content.find(c => c.id === h.id);
+        if(!item) return '';
+        return `
+          <div class="flex gap-4 bg-white/5 p-3 rounded hover:bg-white/10 transition-colors cursor-pointer" onclick="window.location.href='watch.html?id=${item.id}'">
+            <div class="relative w-32 flex-shrink-0">
+              <img src="${item.img}" class="w-full h-20 object-cover rounded">
+              <div class="absolute bottom-0 left-0 right-0 h-1 bg-gray-700">
+                <div class="h-full bg-purple-500" style="width: ${h.progress}%"></div>
+              </div>
+            </div>
+            <div class="flex-1 flex flex-col justify-center">
+              <h3 class="font-semibold">${item.title}</h3>
+              <p class="text-xs text-gray-400 mt-1">${item.duration} • ${item.type === 'series' ? 'Série' : 'Filme'}</p>
+              <p class="text-xs text-gray-500 mt-1">Assistido há ${Math.round((Date.now() - h.timestamp)/3600000)} horas</p>
+            </div>
+            <button onclick="event.stopPropagation(); removeFromHistory(${item.id})" class="text-gray-500 hover:text-red-500 p-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function removeFromHistory(id) {
+      db.history = db.history.filter(h => h.id !== id);
+      localStorage.setItem(DB_KEY, JSON.stringify(db));
+      location.reload();
+    }
+  </script>
+</body>
+</html>
