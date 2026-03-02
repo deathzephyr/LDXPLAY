@@ -5,27 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Assistir - LDX Play</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-  <style> body { background: #000; font-family: 'Inter', sans-serif; } .font-display { font-family: 'Bebas Neue', sans-serif; } </style>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter&display=swap" rel="stylesheet">
+  <style> body { background: #000; font-family: 'Inter', sans-serif; } .font-display { font-family: 'Bebas Neue', sans-serif; }</style>
 </head>
 <body class="text-white">
 
   <header class="fixed top-0 left-0 right-0 p-4 z-50 bg-gradient-to-b from-black to-transparent">
     <div class="flex items-center justify-between">
        <a href="index.html" class="font-display text-2xl">LDX Play</a>
-       <div class="flex items-center gap-4">
-         <span id="watch-title" class="text-sm text-gray-400 font-semibold hidden md:block"></span>
-       </div>
+       <span id="watch-title" class="text-sm text-gray-400 font-semibold hidden md:block"></span>
     </div>
   </header>
 
-  <main id="player-wrapper" class="w-full h-screen flex items-center justify-center bg-black">
-     <div class="text-center text-gray-500"><p>Carregando conteúdo...</p></div>
-  </main>
+  <main id="player-wrapper" class="w-full h-screen flex items-center justify-center bg-black"></main>
 
   <script>
-    // Usando a mesma chave do app principal para compartilhar dados
-    const DB_KEY = 'ldxplay_db_v1'; 
+    const DB_KEY = 'ldxplay_db_v2';
     function getDB() { return JSON.parse(localStorage.getItem(DB_KEY)) || { content: [] }; }
 
     const params = new URLSearchParams(window.location.search);
@@ -40,25 +35,21 @@
       document.title = `Assistir: ${item.title} - LDX Play`;
       titleEl.innerText = item.title;
 
+      // Lógica para YouTube Embed (Trailer)
+      // Assume que videoUrl é o ID do vídeo (ex: vKQi3bBA1y8)
       if(item.videoUrl) {
-        if(item.videoUrl.includes('youtube.com') || item.videoUrl.includes('youtu.be')) {
-            let videoId = '';
-            if(item.videoUrl.includes('youtu.be')) videoId = item.videoUrl.split('/').pop();
-            else videoId = new URLSearchParams(new URL(item.videoUrl).search).get('v');
-            wrapper.innerHTML = `<iframe class="w-full h-full" src="https://www.youtube.com/embed/${videoId}?autoplay=1" frameborder="0" allowfullscreen></iframe>`;
-        } else {
-            wrapper.innerHTML = `<video controls autoplay class="w-full h-full object-contain"><source src="${item.videoUrl}" type="video/mp4"></video>`;
-        }
+         wrapper.innerHTML = `
+           <iframe class="w-full h-full" 
+             src="https://www.youtube.com/embed/${item.videoUrl}?autoplay=1&controls=1&modestbranding=1" 
+             frameborder="0" 
+             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+             allowfullscreen>
+           </iframe>`;
       } else {
-        wrapper.innerHTML = `
-          <div class="text-center p-8 bg-gray-900 rounded-lg">
-            <h3 class="font-semibold text-xl mb-2">Conteúdo não disponível</h3>
-            <p class="text-gray-500 mb-4">Este título ainda não possui vídeo associado.</p>
-            <a href="index.html" class="mt-6 inline-block bg-purple-600 px-6 py-2 rounded hover:bg-purple-700">Voltar ao Início</a>
-          </div>`;
+         wrapper.innerHTML = `<div class="text-center p-8"><h3>Vídeo não disponível</h3></div>`;
       }
     } else {
-       wrapper.innerHTML = `<div class="text-center text-red-500"><h1>Erro 404</h1><p>Conteúdo não encontrado.</p></div>`;
+       wrapper.innerHTML = `<div class="text-center text-red-500"><h1>Erro 404</h1></div>`;
     }
   </script>
 </body>
