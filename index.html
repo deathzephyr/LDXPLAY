@@ -19,8 +19,6 @@
       --accent-glow: rgba(110, 44, 244, 0.4);
       --text-primary: #ffffff;
       --text-secondary: #a0a0a0;
-      --danger: #e50914;
-      --success: #46d369;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html { scroll-behavior: smooth; }
@@ -32,17 +30,16 @@
     ::-webkit-scrollbar-thumb { background: var(--bg-card); border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
-    /* Intro Animation - LDX PLAY */
-    #intro-screen { position: fixed; inset: 0; background: #000; z-index: 99999; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+    /* Intro Animation */
+    #intro-screen { position: fixed; inset: 0; background: #000; z-index: 99999; display: flex; align-items: center; justify-content: center; }
     .logo-letter { display: inline-block; font-family: 'Bebas Neue', sans-serif; font-size: 15vw; color: #fff; opacity: 0; transform: translateY(100px) rotateX(-90deg); animation: letterDrop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; text-shadow: 0 0 20px var(--accent-glow); }
-    .logo-letter:nth-child(1) { animation-delay: 0.1s; color: var(--accent-light); } /* L */
-    .logo-letter:nth-child(2) { animation-delay: 0.2s; color: var(--accent-light); } /* D */
-    .logo-letter:nth-child(3) { animation-delay: 0.3s; color: var(--accent); }      /* X */
-    .logo-letter:nth-child(4) { animation-delay: 0.4s; color: #fff; margin-left: 20px; } /* P */
-    .logo-letter:nth-child(5) { animation-delay: 0.5s; color: #fff; } /* l */
-    .logo-letter:nth-child(6) { animation-delay: 0.6s; color: #fff; } /* a */
-    .logo-letter:nth-child(7) { animation-delay: 0.7s; color: #fff; } /* y */
-
+    .logo-letter:nth-child(1) { animation-delay: 0.1s; color: var(--accent-light); }
+    .logo-letter:nth-child(2) { animation-delay: 0.2s; color: var(--accent-light); }
+    .logo-letter:nth-child(3) { animation-delay: 0.3s; color: var(--accent); }
+    .logo-letter:nth-child(4) { animation-delay: 0.4s; color: #fff; margin-left: 20px; }
+    .logo-letter:nth-child(5) { animation-delay: 0.5s; color: #fff; }
+    .logo-letter:nth-child(6) { animation-delay: 0.6s; color: #fff; }
+    .logo-letter:nth-child(7) { animation-delay: 0.7s; color: #fff; }
     @keyframes letterDrop { to { opacity: 1; transform: translateY(0) rotateX(0); } }
     #intro-screen.fade-out { opacity: 0; pointer-events: none; transition: opacity 1s ease; }
 
@@ -60,14 +57,15 @@
     .top10-number { font-family: 'Bebas Neue', sans-serif; font-size: 140px; line-height: 0.8; color: transparent; -webkit-text-stroke: 4px var(--accent); position: relative; margin-right: -20px; z-index: 1; }
     .hero-gradient { background: linear-gradient(to right, rgba(10,10,15,1) 0%, rgba(10,10,15,0.85) 30%, rgba(10,10,15,0) 60%), linear-gradient(to top, rgba(10,10,15,1) 0%, rgba(10,10,15,0) 40%); }
     .row-nav { position: absolute; top: 0; bottom: 0; width: 60px; background: linear-gradient(to right, rgba(10,10,15,1), transparent); z-index: 10; display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; transition: opacity 0.3s; }
-    .row-nav.right { right: 0; transform: rotate(180deg); background: linear-gradient(to right, rgba(10,10,15,0.9), transparent); }
+    .row-nav.right { right: 0; transform: rotate(180deg); }
     .content-row:hover .row-nav { opacity: 1; }
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 50; display: flex; align-items: flex-start; justify-content: center; overflow-y: auto; padding: 40px 20px; }
     .modal-content { background: var(--bg-secondary); border-radius: 8px; width: 100%; max-width: 900px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); position: relative; animation: modalSlide 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
     @keyframes modalSlide { from { transform: translateY(60px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-    .player-container { position: relative; width: 100%; height: 100vh; background: #000; display: flex; align-items: center; justify-content: center; }
-    .player-controls { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); padding: 20px; opacity: 0; transition: opacity 0.3s; }
-    .player-container:hover .player-controls { opacity: 1; }
+    
+    /* Progress Bar on Cards */
+    .progress-indicator { position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: rgba(255,255,255,0.2); }
+    .progress-indicator-fill { height: 100%; background: var(--accent); }
   </style>
 </head>
 <body>
@@ -88,12 +86,31 @@
     // DATABASE & STATE MANAGEMENT
     // =========================================================================
     
-    const DB_KEY = 'ldxplay_db_v1'; // Nova chave para o novo nome
+    const DB_KEY = 'ldxplay_db_v2'; // Nova versão para o banco de dados
     
-    // Default Content
+    // BANCO DE DADOS REAL COM TRAILERS (YOUTUBE EMBED IDs)
     const SeedContent = [
-      { id: 1, title: "A Ultima Fronteira", type: "series", year: 2024, rating: "98%", duration: "5 Temporadas", desc: "Em um mundo pos-apocaliptico, sobreviventes lutam para reconstruir a civilizacao.", genres: ["Sci-Fi", "Drama"], img: "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=400", bg: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1920", top10: true, videoUrl: "" },
-      { id: 2, title: "Codigo Secreto", type: "movie", year: 2024, rating: "95%", duration: "2h 15min", desc: "Uma hacker descobre uma conspiracao global que ameaca a seguranca mundial.", genres: ["Thriller", "Acao"], img: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=400", bg: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=1920", top10: true, videoUrl: "" }
+      // SÉRIES
+      { id: 1, title: "Stranger Things", type: "series", year: 2022, rating: "97%", duration: "4 Temporadas", desc: "Quando um garoto desaparece, uma pequena cidade descobre um mistério envolvendo experimentos secretos, forças sobrenaturais e uma menina estranha.", genres: ["Sci-Fi", "Drama", "Misterio"], img: "https://occ-0-2774-2773.1.nflxso.net/dnm/api/v6/E8vDc_W8CLv7-yMQu8KMEC7Rrr8/AAAABVr8nYuAg0xDpXDv9V8450dMjPEYURSUbCe28r8nXf0XjD5WYQlMpHsPn4TQGr4D3I2bO2lKQ7I8Cz9Z0UzL0V0XzD5.jpg?r=7e3", bg: "https://occ-0-2774-2773.1.nflxso.net/dnm/api/v6/LmEnxtiAuzezXBjYXPuDgfZ4zKQ/AAAABTrnGfb7nDjN4Dp9JmG_CcZQYQYQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQQ.webp?r=1d4", top10: true, videoUrl: "b9EkMc79ZSU" },
+      { id: 2, title: "The Witcher", type: "series", year: 2023, rating: "91%", duration: "3 Temporadas", desc: "Geralt de Rívia, um caçador de monstros solitário, luta para encontrar seu lugar num mundo onde as pessoas muitas vezes se mostram mais perversas que as feras.", genres: ["Fantasia", "Acao"], img: "https://occ-0-2774-2773.1.nflxso.net/dnm/api/v6/X194MjsQYQYQYQYQYQYQYQYQYQYQYQYQYQYQYQYQYQYQYQYQYQ.webp?r=123", bg: "https://occ-0-2774-2773.1.nflxso.net/dnm/api/v6/LmEnxtiAuzezXBjYXPuDgfZ4zKQ/AAAABTrnGfb7nDjN4Dp9JmG_CcZQYQYQ.webp?r=1d4", top10: true, videoUrl: "ndl1W4ncMWs" },
+      { id: 3, title: "Breaking Bad", type: "series", year: 2008, rating: "99%", duration: "5 Temporadas", desc: "Um professor de química do ensino médio com câncer terminal se junta a um ex-aluno para fabricar e vender metanfetamina para garantir o futuro de sua família.", genres: ["Crime", "Drama", "Suspense"], img: "https://i.pinimg.com/originals/46/30/a9/4630a9a0a6d7c2d8e5d1e7b8e0a8e7b8.jpg", bg: "https://wallpapercave.com/wp/wp2467505.jpg", top10: true, videoUrl: "HhesaQXLuRY" },
+      { id: 4, title: "House of the Dragon", type: "series", year: 2022, rating: "93%", duration: "1 Temporada", desc: "A história da Casa Targaryen, 200 anos antes dos eventos de Game of Thrones.", genres: ["Fantasia", "Drama"], img: "https://hbomax-images.warnermediacdn.com/2022-08/tHOT_S2_key_art_320x480.jpg", bg: "https://www.hbomax.com/img/shows/house-of-the-dragon/bg.jpg", top10: true, videoUrl: "DotnY7P2Q_c" },
+      { id: 5, title: "The Last of Us", type: "series", year: 2023, rating: "96%", duration: "1 Temporada", desc: "Após uma pandemia global que destruiu a civilização, um sobrevivente endurecido é contratado para contrabandear uma menina de 14 anos de uma zona de quarentena opressiva.", genres: ["Acao", "Aventura", "Drama"], img: "https://m.media-amazon.com/images/M/MV5BZGUzYjUzNjQtNjljNC00ZmUwLWExZDAtNGE2YjE2Mjg3ZGE2XkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_.jpg", bg: "https://image.tmdb.org/t/p/original/uKvVjHNqB5VmOrdxqAt2F7J78ED.jpg", videoUrl: "uLtkt8BonwM" },
+      { id: 6, title: "Wednesday", type: "series", year: 2022, rating: "87%", duration: "1 Temporada", desc: "Wednesday Addams investiga uma série de assassinatos enquanto faz novos amigos e inimigos na Escola Nevermore.", genres: ["Comedia", "Misterio"], img: "https://m.media-amazon.com/images/M/MV5BNGNhOTI5ZjgtNjg1Mi00YmRkLWIyYTUtZjdkZjFiNjU1ZjM4XkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_.jpg", bg: "https://occ-0-2774-2773.1.nflxso.net/dnm/api/v6/LmEnxtiAuzezXBjYXPuDgfZ4zKQ/AAAABTrnGfb7nDjN4Dp9JmG_CcZQYQYQ.webp?r=1d4", videoUrl:="Di3WS1CgEjc" },
+      { id: 7, title: "Peaky Blinders", type: "series", year: 2013, rating: "94%", duration: "6 Temporadas", desc: "Uma gangue familiar na Inglaterra de 1919 é centrada em um gangster determinado a subir na vida, não importa o custo.", genres: ["Crime", "Drama"], img: "https://m.media-amazon.com/images/M/MV5BZjYzZDgzMjYtZWNhNS00MTlkLTlmZDktM2U2ZTNlYjNkMTQ2XkEyXkFqcGdeQXVyMTEyNzgwMDUw._V1_.jpg", bg: "https://www.bbc.co.uk/peakyblinders/images/series6/bg.jpg", videoUrl: "oVzVdvGIC7U" },
+      
+      // FILMES
+      { id: 10, title: "Oppenheimer", type: "movie", year: 2023, rating: "96%", duration: "3h", desc: "A história do físico J. Robert Oppenheimer e seu papel no desenvolvimento da bomba atômica.", genres: ["Biografia", "Drama", "Historia"], img: "https://m.media-amazon.com/images/M/MV5BMDBmYTZjNjUtN2M1MS00MTQ2LTk2ODgtNzc2M2QyZGE5NTVjXkEyXkFqcGdeQXVyNzAwMjU2MTY@._V1_.jpg", bg: "https://image.tmdb.org/t/p/original/nb3xI8XI3w4pMVZ38VijbsyBqP4.jpg", top10: true, videoUrl: "uYPbbksJxIg" },
+      { id: 11, title: "Barbie", type: "movie", year: 2023, rating: "88%", duration: "1h 54min", desc: "Barbie e Ken estão tendo o melhor momento de suas vidas no colorido e aparentemente perfeito mundo de Barbie Land.", genres: ["Aventura", "Comedia", "Fantasia"], img: "https://m.media-amazon.com/images/M/MV5BOWIwZGY0OTYtZjU5Yy00MzI4LTg4YTUtN2I1MjYzN2ZlMmRiXkEyXkFqcGdeQXVyMTUzMTg2ODkz._V1_.jpg", bg: "https://image.tmdb.org/t/p/original/iJNAncX7Qf0opGppL1tnJvn7vLG.jpg", videoUrl: "pBk4NYhWNMM" },
+      { id: 12, title: "Interstellar", type: "movie", year: 2014, rating: "98%", duration: "2h 49min", desc: "Um time de exploradores viaja através de um buraco de minhoca no espaço em uma tentativa de assegurar a sobrevivência da humanidade.", genres: ["Aventura", "Drama", "Sci-Fi"], img: "https://m.media-amazon.com/images/M/MV5BZjdkOTU3MDktN2IxOS00OGEyLWFmMjktY2FiMmZkNWIyODZiXkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_.jpg", bg: "https://image.tmdb.org/t/p/original/rAiYTfKGqDCRIIqo664sY9XZIvQ.jpg", top10: true, videoUrl: "zSWdZVtXT7E" },
+      { id: 13, title: "The Batman", type: "movie", year: 2022, rating: "92%", duration: "2h 56min", desc: "Quando um assassino cruel tem como alvo a elite de Gotham City, Batman é forçado a investigar a corrupção oculta da cidade.", genres: ["Acao", "Crime", "Drama"], img: "https://m.media-amazon.com/images/M/MV5BMDdmMTBiNTYtMDIzNi00NGVlLWIzMDYtZTk3MTQ3NGQxZGEwXkEyXkFqcGdeQXVyMzMwOTU5MDk@._V1_.jpg", bg: "https://image.tmdb.org/t/p/original/b0PlSFdDwbyK0cf5RxwDpaOJQvQ.jpg", videoUrl: "mqqft2x_Aa4" },
+      { id: 14, title: "Top Gun: Maverick", type: "movie", year: 2022, rating: "96%", duration: "2h 11min", desc: "Após mais de trinta anos de serviço, Pete 'Maverick' Mitchell é chamado para treinar um grupo de pilotos da Top Gun.", genres: ["Acao", "Drama"], img: "https://m.media-amazon.com/images/M/MV5BZWYzOGEwNTgtNWU3NS00ZTQ0LWJlODItM2I2ZjUzYTU5ZjNjXkEyXkFqcGdeQXVyMjMxOTE0ODA@._V1_.jpg", bg: "https://image.tmdb.org/t/p/original/AaV1YIdWKhw9f0fJhAiGJOh1xzT.jpg", videoUrl: "giXco2jaZ_4" },
+      { id: 15, title: "Dune: Part One", type: "movie", year: 2021, rating: "95%", duration: "2h 35min", desc: "Um jovem homem deve viajar para o planeta mais perigoso do universo para garantir o futuro de sua família e de seu povo.", genres: ["Acao", "Aventura", "Sci-Fi"], img: "https://m.media-amazon.com/images/M/MV5BN2FjNmEyNWMtYzMwZi00NDcxLTkyOWEtMjhkYzY2NDE4YjM4XkEyXkFqcGdeQXVyMTMxODk2OTU@._V1_.jpg", bg: "https://image.tmdb.org/t/p/original/jYEW5xZkZk2WTrdbMGAPFuBqbDc.jpg", videoUrl: "n9xhJrPXop4" },
+      { id: 16, title: "Avatar: O Caminho da Água", type: "movie", year: 2022, rating: "91%", duration: "3h 12min", desc: "Jake Sully vive com sua nova família no planeta Pandora. Quando uma ameaça conhecida retorna, Jake deve lutar com os Na'vi.", genres: ["Acao", "Aventura", "Fantasia"], img: "https://m.media-amazon.com/images/M/MV5BYjhiNjAxODMtYmMzZi00YzNkLTk1ZmEtNzRjYjBhYzU5MjM4XkEyXkFqcGdeQXVyMzMwOTU5MDk@._V1_.jpg", bg: "https://image.tmdb.org/t/p/original/s16H6tpK2utvwDtzZ8Qy4qm5Emw.jpg", videoUrl: "d9MyW72ELq0" },
+      { id: 17, title: "John Wick 4", type: "movie", year: 2023, rating: "94%", duration: "2h 49min", desc: "John Wick descobre um caminho para derrotar a Alta Mesa. Mas antes de ganhar sua liberdade, ele deve enfrentar um novo inimigo.", genres: ["Acao", "Crime", "Suspense"], img: "https://m.media-amazon.com/images/M/MV5BMDExZGJhOGItYzE3Zi00ZTFhLWFiM2QtZDNkNjJhYzBjZDVkXkEyXkFqcGdeQXVyMTEyNzgwMDUw._V1_.jpg", bg: "https://image.tmdb.org/t/p/original/7I6VUdPj6tQECNHdviJkUHD2u89.jpg", videoUrl: "qEVUtrkdg_B4" },
+      { id: 18, title: "Pobres Diabos", type: "movie", year: 2023, rating: "89%", duration: "2h 21min", desc: "Bella Baxter é uma jovem ressuscitada por um cientista brilhante e não convencional que foge com um advogado mulherengo.", genres: ["Comedia", "Drama", "Romance"], img: "https://m.media-amazon.com/images/M/MV5BNGIyYWMzNjktNDE3MC00YWQyLWEyMmEtN2ZmNzZhZDk3NGJlXkEyXkFqcGdeQXVyMTUzMTg2ODkz._V1_.jpg", bg: "https://image.tmdb.org/t/p/original/xrVo0BLVBHn3JVO6h4LyrXVRkiO.jpg", videoUrl: "RlbR5N6vcqw" },
+      { id: 19, title: "A Origem", type: "movie", year: 2010, rating: "98%", duration: "2h 28min", desc: "Um ladrão que rouba segredos corporativos através de sonhos é dado a tarefa de plantar uma ideia na mente de um CEO.", genres: ["Acao", "Sci-Fi", "Suspense"], img: "https://m.media-amazon.com/images/M/MV5BMjAxMzY3NjcxNF5BMl5BanBnXkFtZTcwNTI5OTM0Mw@@._V1_.jpg", bg: "https://image.tmdb.org/t/p/original/8ZTVqvKDQ8emSGUEMjsS4yHAwrp.jpg", videoUrl: "YoHD9XEInc0" },
+      { id: 20, title: "Matrix", type: "movie", year: 1999, rating: "99%", duration: "2h 16min", desc: "Um hacker descobre que sua realidade é uma simulação criada por máquinas e se junta a uma rebelião.", genres: ["Acao", "Sci-Fi"], img: "https://m.media-amazon.com/images/M/MV5BNzQzOTk3OTAtNDQ0Zi00ZTVkLWI0MTEtMDllZjNkYzNjNTc4L2ltYWdlXkEyXkFqcGdeQXVyNjU0OTQ0OTY@._V1_.jpg", bg: "https://image.tmdb.org/t/p/original/fNG7i7RqMErkcqhohV2a6cV1Ehy.jpg", videoUrl: "vKQi3bBA1y8" }
     ];
 
     function getDB() {
@@ -104,6 +121,7 @@
           currentUser: null,
           currentProfile: null,
           myList: [],
+          history: [], // Array de { id, progress, timestamp }
           content: SeedContent
         };
         localStorage.setItem(DB_KEY, JSON.stringify(init));
@@ -127,21 +145,10 @@
 
     function render(view) {
       document.body.style.overflow = 'auto';
-      
       switch(view) {
-        case 'auth':
-          APP.innerHTML = renderAuth();
-          break;
-        case 'profiles':
-          APP.innerHTML = renderProfileSelection();
-          break;
-        case 'main':
-          APP.innerHTML = renderMainApp();
-          initMainEvents();
-          break;
-        case 'player':
-          APP.innerHTML = renderPlayer();
-          break;
+        case 'auth': APP.innerHTML = renderAuth(); break;
+        case 'profiles': APP.innerHTML = renderProfileSelection(); break;
+        case 'main': APP.innerHTML = renderMainApp(); initMainEvents(); break;
       }
     }
 
@@ -155,74 +162,40 @@
           <div class="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent"></div>
           <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
         </div>
-        
         <header class="relative z-10 p-6 md:p-10">
           <h1 class="font-display text-5xl text-white tracking-widest cursor-pointer hover:text-purple-400 transition-colors" onclick="goToAuth()">LDX Play</h1>
         </header>
-
         <main class="relative z-10 flex items-center justify-center min-h-[80vh] p-4">
           <div class="w-full max-w-md bg-black/80 backdrop-blur-md rounded-lg p-8 md:p-12 border border-white/10 shadow-2xl">
-            
             <div id="auth-form-container">
               <h2 class="font-display text-3xl mb-6">Entrar</h2>
-              
               <form onsubmit="handleLogin(event)" class="space-y-5">
                 <div>
-                  <input type="text" id="auth-email" placeholder="Email ou número de telefone" 
-                    class="input-style w-full py-3 px-4 rounded text-white" autocomplete="email">
-                  <p id="error-email" class="text-red-500 text-xs mt-1 hidden">Por favor, insira um email válido.</p>
+                  <input type="text" id="auth-email" placeholder="Email" class="input-style w-full py-3 px-4 rounded text-white" required>
                 </div>
                 <div>
-                  <input type="password" id="auth-pass" placeholder="Senha" 
-                    class="input-style w-full py-3 px-4 rounded text-white" autocomplete="current-password">
-                  <p id="error-pass" class="text-red-500 text-xs mt-1 hidden">A senha deve ter pelo menos 6 caracteres.</p>
+                  <input type="password" id="auth-pass" placeholder="Senha" class="input-style w-full py-3 px-4 rounded text-white" required>
                 </div>
                 <p id="error-main" class="text-red-500 text-sm mb-4 hidden text-center font-medium"></p>
-                <button type="submit" class="btn-primary w-full py-3 rounded font-semibold text-white">
-                  Entrar
-                </button>
+                <button type="submit" class="btn-primary w-full py-3 rounded font-semibold text-white">Entrar</button>
               </form>
-
-              <div class="flex justify-between items-center mt-4 text-sm text-gray-400">
-                <label class="flex items-center gap-2 cursor-pointer hover:text-gray-200">
-                  <input type="checkbox" class="accent-purple-500 bg-transparent border-gray-600 rounded">
-                  <span>Lembrar-me</span>
-                </label>
-                <a href="#" onclick="showHelpReset()" class="hover:text-white hover:underline">Esqueceu a senha?</a>
-              </div>
-
               <p class="text-gray-400 text-sm mt-10">
                 Novo por aqui? <a href="#" onclick="toggleSignup(true)" class="text-white hover:underline font-medium">Criar uma conta</a>.
               </p>
             </div>
-
-            <!-- Signup Form -->
             <div id="signup-form-container" class="hidden">
               <h2 class="font-display text-3xl mb-6">Criar Conta</h2>
-              
               <form onsubmit="handleSignup(event)" class="space-y-5">
-                <div>
-                  <input type="text" id="signup-name" placeholder="Seu nome" 
-                    class="input-style w-full py-3 px-4 rounded text-white">
-                </div>
-                <div>
-                  <input type="email" id="signup-email" placeholder="Email" 
-                    class="input-style w-full py-3 px-4 rounded text-white">
-                </div>
-                <div>
-                  <input type="password" id="signup-pass" placeholder="Senha (mínimo 6 caracteres)" 
-                    class="input-style w-full py-3 px-4 rounded text-white">
-                </div>
+                <input type="text" id="signup-name" placeholder="Seu nome" class="input-style w-full py-3 px-4 rounded text-white" required>
+                <input type="email" id="signup-email" placeholder="Email" class="input-style w-full py-3 px-4 rounded text-white" required>
+                <input type="password" id="signup-pass" placeholder="Senha" class="input-style w-full py-3 px-4 rounded text-white" required>
                 <p id="error-signup" class="text-red-500 text-sm mb-4 hidden text-center font-medium"></p>
-                <button type="submit" class="btn-primary w-full py-3 rounded font-semibold text-white">
-                  Criar Conta
-                </button>
+                <button type="submit" class="btn-primary w-full py-3 rounded font-semibold text-white">Criar Conta</button>
               </form>
               <p class="text-gray-400 text-sm mt-6 text-center">
                 Já tem uma conta? <a href="#" onclick="toggleSignup(false)" class="text-white hover:underline font-medium">Entrar</a>.
               </p>
             </div>
-
           </div>
         </main>
       `;
@@ -232,38 +205,16 @@
       document.getElementById('auth-form-container').classList.toggle('hidden', show);
       document.getElementById('signup-form-container').classList.toggle('hidden', !show);
     }
-
     function goToAuth() { render('auth'); }
-
-    function validateEmail(email) {
-      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      return re.test(email);
-    }
+    function validateEmail(email) { const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; return re.test(email); }
 
     function handleLogin(e) {
       e.preventDefault();
       const email = document.getElementById('auth-email').value;
       const pass = document.getElementById('auth-pass').value;
-      
-      document.getElementById('error-email').classList.add('hidden');
-      document.getElementById('error-pass').classList.add('hidden');
-      document.getElementById('error-main').classList.add('hidden');
-
-      let valid = true;
-      if(!validateEmail(email)) { document.getElementById('error-email').classList.remove('hidden'); valid = false; }
-      if(pass.length < 6) { document.getElementById('error-pass').classList.remove('hidden'); valid = false; }
-      if(!valid) return;
-
       const user = AppDB.users.find(u => u.email === email && u.pass === pass);
-      
-      if(user) {
-        AppDB.currentUser = user;
-        saveDB();
-        render('profiles');
-      } else {
-        document.getElementById('error-main').textContent = "Email ou senha incorretos. Tente novamente.";
-        document.getElementById('error-main').classList.remove('hidden');
-      }
+      if(user) { AppDB.currentUser = user; saveDB(); render('profiles'); } 
+      else { document.getElementById('error-main').textContent = "Email ou senha incorretos. Tente 'teste@teste.com' e '123456'"; document.getElementById('error-main').classList.remove('hidden'); }
     }
 
     function handleSignup(e) {
@@ -271,201 +222,72 @@
       const name = document.getElementById('signup-name').value;
       const email = document.getElementById('signup-email').value;
       const pass = document.getElementById('signup-pass').value;
-
-      if(!validateEmail(email) || pass.length < 6 || name.length < 2) {
-        document.getElementById('error-signup').textContent = "Preencha todos os campos corretamente (senha min 6 caracteres).";
-        document.getElementById('error-signup').classList.remove('hidden');
-        return;
-      }
-
-      if(AppDB.users.find(u => u.email === email)) {
-        document.getElementById('error-signup').textContent = "Este email já está cadastrado.";
-        document.getElementById('error-signup').classList.remove('hidden');
-        return;
-      }
-
-      const newUser = {
-        id: Date.now(),
-        name: name,
-        email: email,
-        pass: pass,
-        profiles: [
-          { id: 1, name: name.split(' ')[0], avatar: 'https://ui-avatars.com/api/?name='+encodeURIComponent(name)+'&background=6e2cf4&color=fff', isMain: true }
-        ]
-      };
-
-      AppDB.users.push(newUser);
-      AppDB.currentUser = newUser;
-      saveDB();
-      render('profiles');
+      if(AppDB.users.find(u => u.email === email)) { document.getElementById('error-signup').textContent = "Email já existe."; document.getElementById('error-signup').classList.remove('hidden'); return; }
+      const newUser = { id: Date.now(), name, email, pass, profiles: [{ id: 1, name: name.split(' ')[0], avatar: 'https://ui-avatars.com/api/?name='+encodeURIComponent(name)+'&background=6e2cf4&color=fff', isMain: true }] };
+      AppDB.users.push(newUser); AppDB.currentUser = newUser; saveDB(); render('profiles');
     }
 
-    function logout() {
-      AppDB.currentUser = null;
-      AppDB.currentProfile = null;
-      saveDB();
-      render('auth');
-    }
+    function logout() { AppDB.currentUser = null; AppDB.currentProfile = null; saveDB(); render('auth'); }
 
     // =========================================================================
-    // PROFILE SELECTION
+    // PROFILES
     // =========================================================================
-
     function renderProfileSelection() {
       if(!AppDB.currentUser) return renderAuth();
-      const profiles = AppDB.currentUser.profiles;
-
       return `
         <div class="min-h-screen flex flex-col items-center justify-center bg-[#0a0a0f]">
-          <h2 class="text-3xl mb-10 text-gray-300 font-light">Quem está assistindo?</h2>
+          <h2 class="text-3xl mb-10 text-gray-300">Quem está assistindo?</h2>
           <div class="flex gap-5 flex-wrap justify-center">
-            ${profiles.map(p => `
-              <button onclick="selectProfile(${p.id})" class="group text-center transition-transform duration-300 hover:scale-105">
-                <div class="w-28 h-28 rounded overflow-hidden border-2 border-transparent group-hover:border-white transition-all mb-2 shadow-lg" style="background-color: #222">
-                  <img src="${p.avatar}" alt="${p.name}" class="w-full h-full object-cover">
+            ${AppDB.currentUser.profiles.map(p => `
+              <button onclick="selectProfile(${p.id})" class="group text-center">
+                <div class="w-28 h-28 rounded overflow-hidden border-2 border-transparent group-hover:border-white transition-all mb-2 shadow-lg">
+                  <img src="${p.avatar}" class="w-full h-full object-cover">
                 </div>
                 <span class="text-gray-400 group-hover:text-white text-sm">${p.name}</span>
               </button>
             `).join('')}
-            ${profiles.length < 5 ? `
-              <button onclick="openAddProfile()" class="group text-center">
-                <div class="w-28 h-28 rounded bg-gray-900 border-2 border-gray-700 group-hover:border-white flex items-center justify-center transition-all mb-2">
-                  <svg class="w-12 h-12 text-gray-600 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                </div>
-                <span class="text-gray-400 group-hover:text-white text-sm">Adicionar Perfil</span>
-              </button>
-            ` : ''}
           </div>
-          <button onclick="openManageProfiles()" class="mt-12 text-gray-500 border border-gray-700 px-6 py-2 text-sm hover:text-white hover:border-white transition-colors">
-            Gerenciar Perfis
-          </button>
-          <div id="modal-container"></div>
-        </div>
-      `;
+        </div>`;
     }
-
-    function selectProfile(id) {
-      const profile = AppDB.currentUser.profiles.find(p => p.id === id);
-      if(profile) {
-        AppDB.currentProfile = profile;
-        saveDB();
-        render('main');
-      }
-    }
-
-    function openAddProfile() {
-      const container = document.getElementById('modal-container');
-      container.innerHTML = `
-        <div class="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
-          <div class="bg-[#181818] p-8 rounded-lg w-full max-w-sm text-center">
-            <h3 class="text-xl mb-4 font-medium">Adicionar Perfil</h3>
-            <input type="text" id="new-profile-name" placeholder="Nome" class="input-style w-full py-2 px-3 rounded text-center mb-4">
-            <div class="flex justify-center gap-4">
-              <button onclick="document.getElementById('modal-container').innerHTML=''" class="bg-gray-600 hover:bg-gray-500 px-6 py-2 rounded text-sm">Cancelar</button>
-              <button onclick="saveNewProfile()" class="btn-primary px-6 py-2 rounded text-sm">Salvar</button>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-    
-    function saveNewProfile() {
-      const name = document.getElementById('new-profile-name').value;
-      if(name.length < 2) return;
-      const newProfile = {
-        id: Date.now(),
-        name: name,
-        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${Math.random()>0.5? '6e2cf4' : 'e50914'}&color=fff`
-      };
-      AppDB.currentUser.profiles.push(newProfile);
-      saveDB();
-      render('profiles');
-    }
-
-    function openManageProfiles() {
-      const list = AppDB.currentUser.profiles.map(p => `
-        <div class="flex items-center justify-between bg-white/5 p-3 rounded mb-2">
-          <div class="flex items-center gap-3">
-            <img src="${p.avatar}" class="w-10 h-10 rounded">
-            <span>${p.name}</span>
-          </div>
-          ${!p.isMain ? `<button onclick="deleteProfile(${p.id})" class="text-red-500 text-sm hover:underline">Remover</button>` : '<span class="text-xs text-gray-500">Principal</span>'}
-        </div>
-      `).join('');
-      
-      const modal = document.createElement('div');
-      modal.className = 'modal-overlay';
-      modal.onclick = (e) => { if(e.target === modal) modal.remove(); };
-      modal.innerHTML = `
-        <div class="modal-content p-8" style="max-width: 400px;">
-          <h2 class="font-display text-2xl mb-6 text-center">Gerenciar Perfis</h2>
-          ${list}
-          <button onclick="this.parentElement.parentElement.remove()" class="mt-4 w-full text-center text-gray-400 text-sm hover:text-white">Fechar</button>
-        </div>
-      `;
-      document.body.appendChild(modal);
-    }
-
-    function deleteProfile(id) {
-      AppDB.currentUser.profiles = AppDB.currentUser.profiles.filter(p => p.id !== id);
-      saveDB();
-      render('profiles');
-    }
+    function selectProfile(id) { AppDB.currentProfile = AppDB.currentUser.profiles.find(p => p.id === id); saveDB(); render('main'); }
 
     // =========================================================================
-    // MAIN APPLICATION LAYOUT
+    // MAIN APP
     // =========================================================================
 
     function renderMainApp() {
       if(!AppDB.currentProfile) return render('profiles');
-      
       return `
-        <!-- Header -->
         <header id="main-header" class="fixed top-0 left-0 right-0 z-40 transition-all duration-500">
           <div class="bg-gradient-to-b from-[#0a0a0f] via-[#0a0a0f]/90 to-transparent pb-20 pt-2">
             <div class="container mx-auto px-4 md:px-10 flex items-center justify-between">
               <div class="flex items-center gap-8">
                 <h1 class="font-display text-3xl text-white cursor-pointer" onclick="render('main')">LDX Play</h1>
                 <nav class="hidden md:flex items-center gap-6 text-sm text-gray-300">
-                  <a href="#" onclick="render('main')" class="hover:text-white transition-colors font-semibold text-white">Início</a>
-                  <a href="#" onclick="filterContent('series')" class="hover:text-white transition-colors">Séries</a>
-                  <a href="#" onclick="filterContent('movie')" class="hover:text-white transition-colors">Filmes</a>
-                  <a href="#" onclick="filterContent('mylist')" class="hover:text-white transition-colors">Minha Lista</a>
+                  <a href="#" onclick="render('main')" class="font-semibold text-white">Início</a>
+                  <a href="#" onclick="filterContent('series')" class="hover:text-white">Séries</a>
+                  <a href="#" onclick="filterContent('movie')" class="hover:text-white">Filmes</a>
+                  <a href="#" onclick="filterContent('mylist')" class="hover:text-white">Minha Lista</a>
+                  <a href="historico.html" class="hover:text-white">Histórico</a>
                 </nav>
               </div>
-
               <div class="flex items-center gap-5">
-                <!-- Search -->
                 <div class="relative">
-                  <button onclick="toggleSearch()" class="p-2 hover:bg-white/10 rounded-full transition-colors">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                  </button>
+                  <button onclick="toggleSearch()" class="p-2 hover:bg-white/10 rounded-full"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg></button>
                   <div id="search-box" class="absolute right-0 top-full mt-2 w-80 bg-[#181818] border border-white/10 rounded shadow-2xl hidden">
-                    <input type="text" id="search-input" onkeyup="performSearch(event)" placeholder="Títulos, gente, gêneros" class="w-full bg-transparent px-4 py-3 text-sm focus:outline-none">
+                    <input type="text" id="search-input" onkeyup="performSearch(event)" placeholder="Buscar..." class="w-full bg-transparent px-4 py-3 text-sm focus:outline-none">
                     <div id="search-results" class="max-h-80 overflow-y-auto hide-scrollbar"></div>
                   </div>
                 </div>
-
-                <!-- Profile Menu -->
                 <div class="relative">
-                  <button onclick="toggleMenu()" class="flex items-center gap-2 hover:bg-white/10 p-1 rounded transition-colors">
-                    <img src="${AppDB.currentProfile.avatar}" alt="" class="w-8 h-8 rounded object-cover">
+                  <button onclick="toggleMenu()" class="flex items-center gap-2 hover:bg-white/10 p-1 rounded">
+                    <img src="${AppDB.currentProfile.avatar}" class="w-8 h-8 rounded object-cover">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                   </button>
-                  <div id="profile-menu" class="absolute right-0 top-full mt-2 w-56 bg-[#181818] border border-white/10 rounded shadow-2xl hidden origin-top-right">
-                    <div class="py-2 border-b border-white/10">
-                      ${AppDB.currentUser.profiles.map(p => `
-                        <div onclick="selectProfile(${p.id})" class="flex items-center gap-3 px-4 py-2 hover:bg-white/10 cursor-pointer text-sm ${p.id === AppDB.currentProfile.id ? 'text-white font-semibold' : 'text-gray-400'}">
-                          <img src="${p.avatar}" class="w-6 h-6 rounded">
-                          ${p.name}
-                        </div>
-                      `).join('')}
-                    </div>
+                  <div id="profile-menu" class="absolute right-0 top-full mt-2 w-56 bg-[#181818] border border-white/10 rounded shadow-2xl hidden">
                     <div class="py-2">
-                      <a href="#" onclick="openAdminPanel()" class="block px-4 py-2 hover:bg-white/10 text-sm text-purple-400 font-semibold">Admin: Adicionar Conteúdo</a>
                       <a href="conta.html" class="block px-4 py-2 hover:bg-white/10 text-sm text-gray-300">Conta</a>
-                      <a href="ajuda.html" class="block px-4 py-2 hover:bg-white/10 text-sm text-gray-300">Central de Ajuda</a>
-                      <a href="#" onclick="logout()" class="block px-4 py-2 hover:bg-white/10 text-sm text-gray-300">Sair da conta</a>
+                      <a href="#" onclick="logout()" class="block px-4 py-2 hover:bg-white/10 text-sm text-gray-300">Sair</a>
                     </div>
                   </div>
                 </div>
@@ -474,280 +296,190 @@
           </div>
         </header>
 
-        <!-- Content -->
-        <main id="main-container">
-          ${renderHomeContent()}
-        </main>
+        <main id="main-container">${renderHomeContent()}</main>
 
-        <!-- Footer -->
         <footer class="border-t border-white/10 mt-20 py-12 text-gray-500 text-sm">
-          <div class="container mx-auto px-4 md:px-10 grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div>
-              <h4 class="font-semibold text-gray-300 mb-4">LDX Play</h4>
-              <p>Plataforma de streaming líder na América Latina.</p>
-            </div>
-            <div>
-              <h4 class="font-semibold text-gray-300 mb-4">Navegação</h4>
-              <ul class="space-y-2">
-                <li><a href="#" onclick="filterContent('movie')" class="hover:text-white">Filmes</a></li>
-                <li><a href="#" onclick="filterContent('series')" class="hover:text-white">Séries</a></li>
-                <li><a href="#" onclick="filterContent('mylist')" class="hover:text-white">Minha Lista</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 class="font-semibold text-gray-300 mb-4">Legal</h4>
-              <ul class="space-y-2">
-                <li><a href="termos.html" class="hover:text-white">Termos de Uso</a></li>
-                <li><a href="privacidade.html" class="hover:text-white">Privacidade</a></li>
-              </ul>
-            </div>
-            <div>
-              <h4 class="font-semibold text-gray-300 mb-4">Suporte</h4>
-              <ul class="space-y-2">
-                <li><a href="ajuda.html" class="hover:text-white">Central de Ajuda</a></li>
-              </ul>
-            </div>
-          </div>
-          <div class="text-center mt-8 text-gray-600 text-xs">
-            © 2024 LDX Play Entertainment, Inc.
+          <div class="container mx-auto px-4 md:px-10 text-center">
+            <p>© 2024 LDX Play Entertainment, Inc.</p>
           </div>
         </footer>
-        
-        <!-- Admin Modal Container -->
-        <div id="admin-modal-container"></div>
       `;
     }
 
     // =========================================================================
-    // ADMIN PANEL
-    // =========================================================================
-
-    function openAdminPanel() {
-      const container = document.getElementById('admin-modal-container');
-      container.innerHTML = `
-        <div class="fixed inset-0 bg-black/90 z-50 flex items-start justify-center p-10 overflow-y-auto">
-          <div class="bg-[#181818] rounded-lg w-full max-w-3xl relative p-8 border border-purple-500/30 shadow-xl">
-            <button onclick="container.innerHTML=''" class="absolute top-4 right-4 text-gray-400 hover:text-white">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-            </button>
-            
-            <h2 class="font-display text-3xl mb-6 text-purple-400">Painel Administrativo LDX Play</h2>
-            <p class="text-gray-400 mb-6">Adicione novos filmes ou séries ao catálogo.</p>
-            
-            <form onsubmit="addNewContent(event)" class="space-y-4">
-              <div class="grid grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-sm text-gray-300 mb-1">Título</label>
-                  <input type="text" id="new-title" class="input-style w-full py-2 px-3 rounded" required>
-                </div>
-                <div>
-                  <label class="block text-sm text-gray-300 mb-1">Ano</label>
-                  <input type="number" id="new-year" class="input-style w-full py-2 px-3 rounded" value="2024" required>
-                </div>
-              </div>
-              
-              <div>
-                <label class="block text-sm text-gray-300 mb-1">Sinopse</label>
-                <textarea id="new-desc" rows="2" class="input-style w-full py-2 px-3 rounded" required></textarea>
-              </div>
-
-              <div class="grid grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-sm text-gray-300 mb-1">Tipo</label>
-                  <select id="new-type" class="input-style w-full py-2 px-3 rounded">
-                    <option value="movie">Filme</option>
-                    <option value="series">Série</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="block text-sm text-gray-300 mb-1">Duração</label>
-                  <input type="text" id="new-duration" placeholder="ex: 2h 10min ou 3 Temporadas" class="input-style w-full py-2 px-3 rounded" required>
-                </div>
-              </div>
-
-              <div>
-                <label class="block text-sm text-gray-300 mb-1">URL do Pôster (Capa Vertical)</label>
-                <input type="url" id="new-img" placeholder="https://..." class="input-style w-full py-2 px-3 rounded" required>
-              </div>
-
-              <div>
-                <label class="block text-sm text-gray-300 mb-1">URL do Background (Banner Horizontal)</label>
-                <input type="url" id="new-bg" placeholder="https://..." class="input-style w-full py-2 px-3 rounded" required>
-              </div>
-
-              <div>
-                <label class="block text-sm text-gray-300 mb-1">URL do Vídeo (YouTube, Vimeo, MP4)</label>
-                <input type="url" id="new-video" placeholder="https://..." class="input-style w-full py-2 px-3 rounded">
-              </div>
-
-              <button type="submit" class="btn-primary w-full py-3 rounded font-semibold mt-4">
-                Adicionar ao Catálogo
-              </button>
-            </form>
-          </div>
-        </div>
-      `;
-    }
-
-    function addNewContent(e) {
-      e.preventDefault();
-      
-      const newContent = {
-        id: Date.now(),
-        title: document.getElementById('new-title').value,
-        year: document.getElementById('new-year').value,
-        desc: document.getElementById('new-desc').value,
-        type: document.getElementById('new-type').value,
-        duration: document.getElementById('new-duration').value,
-        img: document.getElementById('new-img').value,
-        bg: document.getElementById('new-bg').value,
-        videoUrl: document.getElementById('new-video').value,
-        rating: Math.floor(Math.random() * 20 + 80) + '%',
-        genres: ['Drama'],
-        top10: false
-      };
-
-      AppDB.content.unshift(newContent);
-      saveDB();
-      
-      document.getElementById('admin-modal-container').innerHTML = '';
-      render('main');
-      alert('Conteúdo adicionado com sucesso!');
-    }
-
-    // =========================================================================
-    // HOME CONTENT RENDERING
+    // CONTENT RENDERING
     // =========================================================================
 
     let heroIdx = 0;
     function renderHomeContent() {
-      if(AppDB.content.length === 0) return '<div class="pt-40 text-center text-gray-400">Nenhum conteúdo disponível. Use o Painel Admin.</div>';
-
+      if(AppDB.content.length === 0) return '<div class="pt-40 text-center">Sem conteúdo</div>';
       return `
-        <section id="hero-section" class="relative h-[85vh] w-full overflow-hidden">
-          ${renderHero()}
-        </section>
-        <section class="relative z-10 -mt-40 pb-20 space-y-6">
-          <div id="content-rows">
-            ${renderRows()}
-          </div>
-        </section>
-      `;
+        <section id="hero-section" class="relative h-[85vh] w-full overflow-hidden">${renderHero()}</section>
+        <section class="relative z-10 -mt-40 pb-20 space-y-6"><div id="content-rows">${renderRows()}</div></section>`;
     }
 
     function renderHero() {
       const featured = AppDB.content.filter(c => c.img && c.bg);
-      if(featured.length === 0) return '';
       const item = featured[heroIdx % featured.length];
-      
       return `
-        <div class="absolute inset-0 transition-opacity duration-1000" style="background: url('${item.bg}') center/cover no-repeat;">
+        <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('${item.bg}')">
           <div class="hero-gradient absolute inset-0"></div>
         </div>
         <div class="relative z-10 h-full flex items-center">
-          <div class="container mx-auto px-4 md:px-10">
-            <div class="max-w-xl pt-20">
-              <h1 class="font-display text-5xl md:text-7xl mb-4 leading-none">${item.title}</h1>
-              <div class="flex items-center gap-3 text-sm mb-4 text-gray-300">
-                <span class="text-green-400 font-bold">${item.rating}</span>
-                <span>${item.year}</span>
-                <span class="border border-white/30 px-1 text-xs py-px">${item.type === 'series' ? 'SÉRIE' : 'FILME'}</span>
-                <span class="text-gray-400">${item.duration}</span>
-              </div>
-              <p class="text-sm md:text-base text-gray-200 mb-6 line-clamp-3">${item.desc}</p>
-              <div class="flex gap-3">
-                <button onclick="playItem(${item.id})" class="flex items-center gap-2 bg-white text-black px-8 py-3 rounded font-semibold hover:bg-white/80 transition-all transform hover:scale-105 shadow-lg">
-                  <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                  Assistir
-                </button>
-                <button onclick="openDetail(${item.id})" class="flex items-center gap-2 bg-gray-500/70 px-8 py-3 rounded font-semibold hover:bg-gray-500/50 transition-all backdrop-blur-sm">
-                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                  Mais Informações
-                </button>
-              </div>
+          <div class="container mx-auto px-4 md:px-10 max-w-xl pt-20">
+            <h1 class="font-display text-5xl md:text-7xl mb-4">${item.title}</h1>
+            <p class="text-sm md:text-base text-gray-200 mb-6 line-clamp-3">${item.desc}</p>
+            <div class="flex gap-3">
+              <button onclick="playItem(${item.id})" class="flex items-center gap-2 bg-white text-black px-8 py-3 rounded font-semibold hover:bg-white/80 shadow-lg">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                Assistir
+              </button>
+              <button onclick="openDetail(${item.id})" class="flex items-center gap-2 bg-gray-500/70 px-8 py-3 rounded font-semibold hover:bg-gray-500/50 backdrop-blur-sm">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Info
+              </button>
             </div>
           </div>
-        </div>
-      `;
+        </div>`;
     }
 
     function renderRows() {
-      const rows = [
-        { title: "Top 10 no Brasil", filter: c => c.top10, type: 'top10' },
-        { title: "Adicionados Recentemente", filter: c => true, type: 'row' }
-      ];
-
-      return rows.map(row => {
-        const items = AppDB.content.filter(row.filter);
-        if(items.length === 0) return '';
+      // "Continuar Assistindo" (History)
+      let rowsHtml = '';
+      if(AppDB.history.length > 0) {
+        const historyItems = AppDB.history.map(h => {
+          const content = AppDB.content.find(c => c.id === h.id);
+          return content ? { ...content, progress: h.progress } : null;
+        }).filter(Boolean).reverse();
         
-        if(row.type === 'top10') {
-          return `
-            <div class="content-row container mx-auto px-4 md:px-10 relative">
-              <h3 class="text-lg md:text-xl font-semibold mb-1">${row.title}</h3>
-              <div class="flex items-end overflow-x-auto hide-scrollbar py-4 pl-2">
-                ${items.slice(0, 10).map((item, i) => `
-                  <div class="flex items-end flex-shrink-0 mr-6 group cursor-pointer" onclick="openDetail(${item.id})">
-                    <span class="top10-number">${i+1}</span>
-                    <div class="poster-card">
-                      <img src="${item.img}" alt="${item.title}">
-                    </div>
-                  </div>
-                `).join('')}
-              </div>
-            </div>
-          `;
-        }
-
-        return `
-          <div class="content-row container mx-auto px-4 md:px-10 relative group">
-            <h3 class="text-lg md:text-xl font-semibold mb-1">${row.title}</h3>
-            <div class="relative">
-              <div class="row-nav left" onclick="scrollRow(this, -1)"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg></div>
+        if(historyItems.length > 0) {
+          rowsHtml += `
+            <div class="content-row container mx-auto px-4 md:px-10 relative group">
+              <h3 class="text-lg md:text-xl font-semibold mb-1">Continuar Assistindo</h3>
               <div class="flex overflow-x-auto hide-scrollbar py-4 gap-2">
-                ${items.map(item => `
-                  <div onclick="openDetail(${item.id})" class="poster-card cursor-pointer">
+                ${historyItems.map(item => `
+                  <div onclick="playItem(${item.id})" class="poster-card cursor-pointer relative">
                     <img src="${item.img}" alt="${item.title}">
+                    <div class="progress-indicator"><div class="progress-indicator-fill" style="width: ${item.progress}%"></div></div>
                     <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
-                      <div>
-                        <p class="font-semibold text-sm">${item.title}</p>
-                      </div>
+                      <p class="font-semibold text-sm">${item.title}</p>
                     </div>
                   </div>
                 `).join('')}
               </div>
-              <div class="row-nav right" onclick="scrollRow(this, 1)"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg></div>
-            </div>
+            </div>`;
+        }
+      }
+
+      // Top 10
+      const top10 = AppDB.content.filter(c => c.top10);
+      rowsHtml += `
+        <div class="content-row container mx-auto px-4 md:px-10 relative">
+          <h3 class="text-lg md:text-xl font-semibold mb-1">Top 10 no Brasil</h3>
+          <div class="flex items-end overflow-x-auto hide-scrollbar py-4 pl-2">
+            ${top10.slice(0, 10).map((item, i) => `
+              <div class="flex items-end flex-shrink-0 mr-6 group cursor-pointer" onclick="openDetail(${item.id})">
+                <span class="top10-number">${i+1}</span>
+                <div class="poster-card"><img src="${item.img}"></div>
+              </div>
+            `).join('')}
           </div>
-        `;
-      }).join('');
+        </div>`;
+
+      // Todos os filmes/séries
+      const all = AppDB.content.filter(c => !c.top10); // Evitar duplicidade visual, ou mostrar todos
+      rowsHtml += `
+        <div class="content-row container mx-auto px-4 md:px-10 relative group">
+          <h3 class="text-lg md:text-xl font-semibold mb-1">Catálogo Completo</h3>
+          <div class="flex overflow-x-auto hide-scrollbar py-4 gap-2">
+            ${AppDB.content.map(item => `
+              <div onclick="openDetail(${item.id})" class="poster-card cursor-pointer">
+                <img src="${item.img}">
+              </div>
+            `).join('')}
+          </div>
+        </div>`;
+
+      return rowsHtml;
     }
 
     function initMainEvents() {
       clearInterval(heroInterval);
-      heroInterval = setInterval(() => {
-        heroIdx++;
-        const hs = document.getElementById('hero-section');
-        if(hs) hs.innerHTML = renderHero();
-      }, 8000);
+      heroInterval = setInterval(() => { heroIdx++; document.getElementById('hero-section').innerHTML = renderHero(); }, 7000);
       window.addEventListener('scroll', handleScroll);
     }
-
     function handleScroll() {
       const h = document.getElementById('main-header');
       if(!h) return;
-      if(window.scrollY > 50) { h.classList.add('bg-[#0a0a0f]/95', 'backdrop-blur-md'); h.classList.remove('bg-gradient-to-b', 'from-[#0a0a0f]', 'via-[#0a0a0f]/90', 'to-transparent'); }
-      else { h.classList.remove('bg-[#0a0a0f]/95', 'backdrop-blur-md'); h.classList.add('bg-gradient-to-b', 'from-[#0a0a0f]', 'via-[#0a0a0f]/90', 'to-transparent'); }
-    }
-
-    function scrollRow(btn, dir) {
-      const c = btn.parentElement.querySelector('.flex');
-      c.scrollBy({ left: c.clientWidth * 0.8 * dir, behavior: 'smooth' });
+      if(window.scrollY > 50) { h.classList.add('bg-[#0a0a0f]/95', 'backdrop-blur-md'); h.classList.remove('bg-gradient-to-b'); }
+      else { h.classList.remove('bg-[#0a0a0f]/95'); h.classList.add('bg-gradient-to-b'); }
     }
 
     // =========================================================================
-    // FILTER & DETAIL
+    // ACTIONS: PLAY, DETAIL, HISTORY
     // =========================================================================
+
+    function playItem(id) {
+      const item = AppDB.content.find(c => c.id === id);
+      if(!item || !item.videoUrl) { alert('Trailer não disponível'); return; }
+      
+      // 1. Salvar no histórico
+      const historyIndex = AppDB.history.findIndex(h => h.id === id);
+      if(historyIndex !== -1) AppDB.history.splice(historyIndex, 1); // Remove antigo
+      
+      AppDB.history.push({ 
+        id: id, 
+        progress: Math.floor(Math.random() * 60) + 20, // Simula progresso de 20% a 80%
+        timestamp: Date.now()
+      });
+      saveDB();
+      
+      // 2. Abrir Player (Watch Page)
+      window.location.href = `watch.html?id=${id}`;
+    }
+
+    function openDetail(id) {
+      const item = AppDB.content.find(c => c.id === id);
+      if(!item) return;
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.onclick = (e) => { if(e.target === modal) modal.remove(); };
+      
+      modal.innerHTML = `
+        <div class="modal-content overflow-hidden relative">
+          <button onclick="this.parentElement.parentElement.remove()" class="absolute top-4 right-4 bg-[#181818] rounded-full p-1 hover:bg-gray-700 z-10">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+          <div class="relative h-96 bg-cover bg-center" style="background-image: url('${item.bg}')">
+            <div class="absolute inset-0 bg-gradient-to-t from-[#181818] via-transparent to-transparent"></div>
+            <div class="absolute bottom-8 left-8 right-8">
+              <h2 class="font-display text-5xl md:text-6xl mb-4 leading-none">${item.title}</h2>
+              <div class="flex gap-3">
+                <button onclick="playItem(${item.id})" class="flex items-center gap-2 bg-white text-black px-8 py-2 rounded font-semibold hover:bg-white/80 shadow-lg">
+                  <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                  Assistir
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="p-8 bg-gradient-to-b from-[#181818] to-[#0f0f14]">
+            <div class="grid md:grid-cols-3 gap-8">
+              <div class="md:col-span-2">
+                <div class="flex gap-4 text-sm mb-4">
+                  <span class="text-green-400 font-bold">${item.rating} Relevância</span>
+                  <span class="text-gray-400">${item.year}</span>
+                  <span class="text-gray-400">${item.duration}</span>
+                </div>
+                <p class="text-gray-300 leading-relaxed">${item.desc}</p>
+              </div>
+              <div class="text-sm">
+                <p class="text-gray-400 mb-1">Gêneros: <span class="text-white">${item.genres.join(', ')}</span></p>
+              </div>
+            </div>
+          </div>
+        </div>`;
+      document.body.appendChild(modal);
+    }
 
     function filterContent(type) {
       render('main'); 
@@ -764,132 +496,26 @@
             <div class="container mx-auto px-4 md:px-10">
               <h2 class="font-display text-4xl md:text-5xl mb-8">${title}</h2>
               <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
-                ${items.map(item => `
-                  <div onclick="openDetail(${item.id})" class="cursor-pointer group relative">
-                    <img src="${item.img}" alt="${item.title}" class="w-full aspect-[2/3] object-cover rounded transition-all duration-300 group-hover:scale-105 group-hover:z-10 group-hover:shadow-xl">
-                  </div>
-                `).join('')}
+                ${items.map(item => `<div onclick="openDetail(${item.id})" class="cursor-pointer group relative"><img src="${item.img}" class="w-full aspect-[2/3] object-cover rounded"></div>`).join('')}
               </div>
-              ${items.length === 0 ? '<p class="text-gray-400 text-lg mt-10">Nenhum conteúdo encontrado.</p>' : ''}
             </div>
-          </div>
-        `;
+          </div>`;
       }, 50);
     }
 
-    function openDetail(id) {
-      const item = AppDB.content.find(c => c.id === id);
-      if(!item) return;
-      const inList = AppDB.myList.includes(id);
-      const modal = document.createElement('div');
-      modal.className = 'modal-overlay';
-      modal.onclick = (e) => { if(e.target === modal) modal.remove(); };
-      
-      modal.innerHTML = `
-        <div class="modal-content overflow-hidden relative">
-          <button onclick="this.parentElement.parentElement.remove()" class="absolute top-4 right-4 bg-[#181818] rounded-full p-1 hover:bg-gray-700 z-10">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-          </button>
-          <div class="relative h-96 bg-cover bg-center" style="background-image: url('${item.bg}')">
-            <div class="absolute inset-0 bg-gradient-to-t from-[#181818] via-transparent to-transparent"></div>
-            <div class="absolute bottom-8 left-8 right-8">
-              <h2 class="font-display text-5xl md:text-6xl mb-4 leading-none">${item.title}</h2>
-              <div class="flex gap-3">
-                <button onclick="playItem(${item.id})" class="flex items-center gap-2 bg-white text-black px-8 py-2 rounded font-semibold hover:bg-white/80 transition-colors shadow-lg">
-                  <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                  Assistir
-                </button>
-                <button onclick="toggleMyList(${item.id})" class="p-2 border-2 border-gray-400 rounded-full hover:border-white transition-colors">
-                   ${inList ? '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>' : '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>'}
-                </button>
-              </div>
-            </div>
-          </div>
-          <div class="p-8 bg-gradient-to-b from-[#181818] to-[#0f0f14]">
-            <div class="grid md:grid-cols-3 gap-8">
-              <div class="md:col-span-2">
-                <div class="flex gap-4 text-sm mb-4">
-                  <span class="text-green-400 font-bold">${item.rating}</span>
-                  <span class="text-gray-400">${item.year}</span>
-                  <span class="text-gray-400">${item.duration}</span>
-                </div>
-                <p class="text-gray-300 leading-relaxed">${item.desc}</p>
-              </div>
-              <div class="text-sm">
-                <p class="text-gray-400 mb-1">Gêneros: <span class="text-white">${item.genres.join(', ')}</span></p>
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-      document.body.appendChild(modal);
-    }
-
-    function toggleMyList(id) {
-      const idx = AppDB.myList.indexOf(id);
-      if(idx === -1) AppDB.myList.push(id);
-      else AppDB.myList.splice(idx, 1);
-      saveDB();
-      openDetail(id);
-    }
-
-    // =========================================================================
-    // PLAYER & SEARCH
-    // =========================================================================
-
-    function playItem(id) {
-      const item = AppDB.content.find(c => c.id === id);
-      if(!item) return;
-      
-      if(item.videoUrl) {
-          if(item.videoUrl.includes('youtube.com') || item.videoUrl.includes('youtu.be') || item.videoUrl.includes('vimeo.com')) {
-              window.open(item.videoUrl, '_blank');
-              alert('Abrindo vídeo externo em uma nova aba.');
-          } else {
-              render('player');
-              setTimeout(() => {
-                  document.getElementById('player-video-source').src = item.videoUrl;
-                  document.querySelector('video').load();
-              }, 100);
-          }
-      } else {
-          render('player');
-      }
-    }
-
-    function renderPlayer() {
-      return `
-        <div class="player-container" onclick="togglePlayPause()">
-          <video id="player-video" class="w-full h-full object-contain" controls autoplay>
-             <source id="player-video-source" src="" type="video/mp4">
-             Seu navegador não suporta vídeos HTML5.
-          </video>
-          <div class="player-controls">
-            <div class="flex justify-between items-center">
-               <button onclick="event.stopPropagation(); render('main')" class="flex items-center gap-2 hover:text-purple-400 transition-colors">
-                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-                 Voltar
-               </button>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    function toggleSearch() { document.getElementById('search-box').classList.toggle('hidden'); document.getElementById('search-input').focus(); }
+    function toggleSearch() { document.getElementById('search-box').classList.toggle('hidden'); }
     function performSearch(e) {
       const q = e.target.value.toLowerCase();
       const resBox = document.getElementById('search-results');
       if(q.length < 2) { resBox.innerHTML = ''; return; }
       const found = AppDB.content.filter(c => c.title.toLowerCase().includes(q));
       resBox.innerHTML = found.map(item => `
-        <div onclick="openDetail(${item.id}); document.getElementById('search-box').classList.add('hidden');" class="flex items-center gap-3 p-2 hover:bg-white/10 cursor-pointer">
+        <div onclick="openDetail(${item.id}); toggleSearch();" class="flex items-center gap-3 p-2 hover:bg-white/10 cursor-pointer">
           <img src="${item.img}" class="w-10 h-14 object-cover rounded">
           <div><p class="text-sm font-medium">${item.title}</p><p class="text-xs text-gray-400">${item.year}</p></div>
         </div>
       `).join('') || '<p class="p-4 text-sm text-gray-400">Nenhum resultado</p>';
     }
-
     function toggleMenu() { document.getElementById('profile-menu').classList.toggle('hidden'); }
 
     // =========================================================================
