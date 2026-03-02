@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LDX Play - Streaming Oficial</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #13131a;
+      --bg-card: #1f1f2c;
+      --accent: #6e2cf4;
+      --accent-dark: #4a1ca8;
+      --accent-light: #9d5cf5;
+      --accent-glow: rgba(110, 44, 244, 0.4);
+      --text-primary: #ffffff;
+      --text-secondary: #a0a0a0;
+      --danger: #e50914;
+      --success: #46d369;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background-color: var(--bg-primary); color: var(--text-primary); overflow-x: hidden; }
+    .font-display { font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.04em; }
+
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: var(--bg-primary); }
+    ::-webkit-scrollbar-thumb { background: var(--bg-card); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+    /* Intro Animation - LDX PLAY */
+    #intro-screen { position: fixed; inset: 0; background: #000; z-index: 99999; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+    .logo-letter { display: inline-block; font-family: 'Bebas Neue', sans-serif; font-size: 15vw; color: #fff; opacity: 0; transform: translateY(100px) rotateX(-90deg); animation: letterDrop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; text-shadow: 0 0 20px var(--accent-glow); }
+    .logo-letter:nth-child(1) { animation-delay: 0.1s; color: var(--accent-light); } /* L */
+    .logo-letter:nth-child(2) { animation-delay: 0.2s; color: var(--accent-light); } /* D */
+    .logo-letter:nth-child(3) { animation-delay: 0.3s; color: var(--accent); }      /* X */
+    .logo-letter:nth-child(4) { animation-delay: 0.4s; color: #fff; margin-left: 20px; } /* P */
+    .logo-letter:nth-child(5) { animation-delay: 0.5s; color: #fff; } /* l */
+    .logo-letter:nth-child(6) { animation-delay: 0.6s; color: #fff; } /* a */
+    .logo-letter:nth-child(7) { animation-delay: 0.7s; color: #fff; } /* y */
+
+    @keyframes letterDrop { to { opacity: 1; transform: translateY(0) rotateX(0); } }
+    #intro-screen.fade-out { opacity: 0; pointer-events: none; transition: opacity 1s ease; }
+
+    /* Utils */
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .input-style { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); transition: all 0.3s; }
+    .input-style:focus { outline: none; border-color: var(--accent); background: rgba(255,255,255,0.08); box-shadow: 0 0 0 3px rgba(110, 44, 244, 0.2); }
+    .btn-primary { background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%); transition: all 0.2s; }
+    .btn-primary:hover { filter: brightness(1.15); transform: scale(1.01); }
+
+    /* Components */
+    .poster-card { flex: 0 0 auto; width: 160px; transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), z-index 0s; position: relative; border-radius: 6px; overflow: hidden; }
+    .poster-card:hover { transform: scale(1.09); z-index: 20; box-shadow: 0 14px 30px rgba(0,0,0,0.7); }
+    .poster-card img { width: 100%; height: 240px; object-fit: cover; display: block; }
+    .top10-number { font-family: 'Bebas Neue', sans-serif; font-size: 140px; line-height: 0.8; color: transparent; -webkit-text-stroke: 4px var(--accent); position: relative; margin-right: -20px; z-index: 1; }
+    .hero-gradient { background: linear-gradient(to right, rgba(10,10,15,1) 0%, rgba(10,10,15,0.85) 30%, rgba(10,10,15,0) 60%), linear-gradient(to top, rgba(10,10,15,1) 0%, rgba(10,10,15,0) 40%); }
+    .row-nav { position: absolute; top: 0; bottom: 0; width: 60px; background: linear-gradient(to right, rgba(10,10,15,1), transparent); z-index: 10; display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; transition: opacity 0.3s; }
+    .row-nav.right { right: 0; transform: rotate(180deg); background: linear-gradient(to right, rgba(10,10,15,0.9), transparent); }
+    .content-row:hover .row-nav { opacity: 1; }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 50; display: flex; align-items: flex-start; justify-content: center; overflow-y: auto; padding: 40px 20px; }
+    .modal-content { background: var(--bg-secondary); border-radius: 8px; width: 100%; max-width: 900px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); position: relative; animation: modalSlide 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+    @keyframes modalSlide { from { transform: translateY(60px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .player-container { position: relative; width: 100%; height: 100vh; background: #000; display: flex; align-items: center; justify-content: center; }
+    .player-controls { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.9), transparent); padding: 20px; opacity: 0; transition: opacity 0.3s; }
+    .player-container:hover .player-controls { opacity: 1; }
+  </style>
+</head>
+<body>
+
+  <!-- INTRO SCREEN -->
+  <div id="intro-screen">
+    <div class="logo-container">
+      <span class="logo-letter">L</span><span class="logo-letter">D</span><span class="logo-letter">X</span>
+      <span class="logo-letter">P</span><span class="logo-letter">l</span><span class="logo-letter">a</span><span class="logo-letter">y</span>
+    </div>
+  </div>
+
+  <!-- APP ROOT -->
+  <div id="app"></div>
+
+  <script>
+    // =========================================================================
+    // DATABASE & STATE MANAGEMENT
+    // =========================================================================
+    
+    const DB_KEY = 'ldxplay_db_v1'; // Nova chave para o novo nome
+    
+    // Default Content
+    const SeedContent = [
+      { id: 1, title: "A Ultima Fronteira", type: "series", year: 2024, rating: "98%", duration: "5 Temporadas", desc: "Em um mundo pos-apocaliptico, sobreviventes lutam para reconstruir a civilizacao.", genres: ["Sci-Fi", "Drama"], img: "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=400", bg: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1920", top10: true, videoUrl: "" },
+      { id: 2, title: "Codigo Secreto", type: "movie", year: 2024, rating: "95%", duration: "2h 15min", desc: "Uma hacker descobre uma conspiracao global que ameaca a seguranca mundial.", genres: ["Thriller", "Acao"], img: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=400", bg: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=1920", top10: true, videoUrl: "" }
+    ];
+
+    function getDB() {
+      const data = localStorage.getItem(DB_KEY);
+      if (!data) {
+        const init = {
+          users: [],
+          currentUser: null,
+          currentProfile: null,
+          myList: [],
+          content: SeedContent
+        };
+        localStorage.setItem(DB_KEY, JSON.stringify(init));
+        return init;
+      }
+      return JSON.parse(data);
+    }
+
+    function saveDB() {
+      localStorage.setItem(DB_KEY, JSON.stringify(AppDB));
+    }
+
+    let AppDB = getDB();
+    let heroInterval = null;
+
+    // =========================================================================
+    // RENDER ENGINE
+    // =========================================================================
+    
+    const APP = document.getElementById('app');
+
+    function render(view) {
+      document.body.style.overflow = 'auto';
+      
+      switch(view) {
+        case 'auth':
+          APP.innerHTML = renderAuth();
+          break;
+        case 'profiles':
+          APP.innerHTML = renderProfileSelection();
+          break;
+        case 'main':
+          APP.innerHTML = renderMainApp();
+          initMainEvents();
+          break;
+        case 'player':
+          APP.innerHTML = renderPlayer();
+          break;
+      }
+    }
+
+    // =========================================================================
+    // AUTH MODULE
+    // =========================================================================
+
+    function renderAuth() {
+      return `
+        <div class="fixed inset-0 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=1920');">
+          <div class="absolute inset-0 bg-gradient-to-r from-black via-black/80 to-transparent"></div>
+          <div class="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+        </div>
+        
+        <header class="relative z-10 p-6 md:p-10">
+          <h1 class="font-display text-5xl text-white tracking-widest cursor-pointer hover:text-purple-400 transition-colors" onclick="goToAuth()">LDX Play</h1>
+        </header>
+
+        <main class="relative z-10 flex items-center justify-center min-h-[80vh] p-4">
+          <div class="w-full max-w-md bg-black/80 backdrop-blur-md rounded-lg p-8 md:p-12 border border-white/10 shadow-2xl">
+            
+            <div id="auth-form-container">
+              <h2 class="font-display text-3xl mb-6">Entrar</h2>
+              
+              <form onsubmit="handleLogin(event)" class="space-y-5">
+                <div>
+                  <input type="text" id="auth-email" placeholder="Email ou número de telefone" 
+                    class="input-style w-full py-3 px-4 rounded text-white" autocomplete="email">
+                  <p id="error-email" class="text-red-500 text-xs mt-1 hidden">Por favor, insira um email válido.</p>
+                </div>
+                <div>
+                  <input type="password" id="auth-pass" placeholder="Senha" 
+                    class="input-style w-full py-3 px-4 rounded text-white" autocomplete="current-password">
+                  <p id="error-pass" class="text-red-500 text-xs mt-1 hidden">A senha deve ter pelo menos 6 caracteres.</p>
+                </div>
+                <p id="error-main" class="text-red-500 text-sm mb-4 hidden text-center font-medium"></p>
+                <button type="submit" class="btn-primary w-full py-3 rounded font-semibold text-white">
+                  Entrar
+                </button>
+              </form>
+
+              <div class="flex justify-between items-center mt-4 text-sm text-gray-400">
+                <label class="flex items-center gap-2 cursor-pointer hover:text-gray-200">
+                  <input type="checkbox" class="accent-purple-500 bg-transparent border-gray-600 rounded">
+                  <span>Lembrar-me</span>
+                </label>
+                <a href="#" onclick="showHelpReset()" class="hover:text-white hover:underline">Esqueceu a senha?</a>
+              </div>
+
+              <p class="text-gray-400 text-sm mt-10">
+                Novo por aqui? <a href="#" onclick="toggleSignup(true)" class="text-white hover:underline font-medium">Criar uma conta</a>.
+              </p>
+            </div>
+
+            <!-- Signup Form -->
+            <div id="signup-form-container" class="hidden">
+              <h2 class="font-display text-3xl mb-6">Criar Conta</h2>
+              
+              <form onsubmit="handleSignup(event)" class="space-y-5">
+                <div>
+                  <input type="text" id="signup-name" placeholder="Seu nome" 
+                    class="input-style w-full py-3 px-4 rounded text-white">
+                </div>
+                <div>
+                  <input type="email" id="signup-email" placeholder="Email" 
+                    class="input-style w-full py-3 px-4 rounded text-white">
+                </div>
+                <div>
+                  <input type="password" id="signup-pass" placeholder="Senha (mínimo 6 caracteres)" 
+                    class="input-style w-full py-3 px-4 rounded text-white">
+                </div>
+                <p id="error-signup" class="text-red-500 text-sm mb-4 hidden text-center font-medium"></p>
+                <button type="submit" class="btn-primary w-full py-3 rounded font-semibold text-white">
+                  Criar Conta
+                </button>
+              </form>
+              <p class="text-gray-400 text-sm mt-6 text-center">
+                Já tem uma conta? <a href="#" onclick="toggleSignup(false)" class="text-white hover:underline font-medium">Entrar</a>.
+              </p>
+            </div>
+
+          </div>
+        </main>
+      `;
+    }
+
+    function toggleSignup(show) {
+      document.getElementById('auth-form-container').classList.toggle('hidden', show);
+      document.getElementById('signup-form-container').classList.toggle('hidden', !show);
+    }
+
+    function goToAuth() { render('auth'); }
+
+    function validateEmail(email) {
+      const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      return re.test(email);
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('auth-email').value;
+      const pass = document.getElementById('auth-pass').value;
+      
+      document.getElementById('error-email').classList.add('hidden');
+      document.getElementById('error-pass').classList.add('hidden');
+      document.getElementById('error-main').classList.add('hidden');
+
+      let valid = true;
+      if(!validateEmail(email)) { document.getElementById('error-email').classList.remove('hidden'); valid = false; }
+      if(pass.length < 6) { document.getElementById('error-pass').classList.remove('hidden'); valid = false; }
+      if(!valid) return;
+
+      const user = AppDB.users.find(u => u.email === email && u.pass === pass);
+      
+      if(user) {
+        AppDB.currentUser = user;
+        saveDB();
+        render('profiles');
+      } else {
+        document.getElementById('error-main').textContent = "Email ou senha incorretos. Tente novamente.";
+        document.getElementById('error-main').classList.remove('hidden');
+      }
+    }
+
+    function handleSignup(e) {
+      e.preventDefault();
+      const name = document.getElementById('signup-name').value;
+      const email = document.getElementById('signup-email').value;
+      const pass = document.getElementById('signup-pass').value;
+
+      if(!validateEmail(email) || pass.length < 6 || name.length < 2) {
+        document.getElementById('error-signup').textContent = "Preencha todos os campos corretamente (senha min 6 caracteres).";
+        document.getElementById('error-signup').classList.remove('hidden');
+        return;
+      }
+
+      if(AppDB.users.find(u => u.email === email)) {
+        document.getElementById('error-signup').textContent = "Este email já está cadastrado.";
+        document.getElementById('error-signup').classList.remove('hidden');
+        return;
+      }
+
+      const newUser = {
+        id: Date.now(),
+        name: name,
+        email: email,
+        pass: pass,
+        profiles: [
+          { id: 1, name: name.split(' ')[0], avatar: 'https://ui-avatars.com/api/?name='+encodeURIComponent(name)+'&background=6e2cf4&color=fff', isMain: true }
+        ]
+      };
+
+      AppDB.users.push(newUser);
+      AppDB.currentUser = newUser;
+      saveDB();
+      render('profiles');
+    }
+
+    function logout() {
+      AppDB.currentUser = null;
+      AppDB.currentProfile = null;
+      saveDB();
+      render('auth');
+    }
+
+    // =========================================================================
+    // PROFILE SELECTION
+    // =========================================================================
+
+    function renderProfileSelection() {
+      if(!AppDB.currentUser) return renderAuth();
+      const profiles = AppDB.currentUser.profiles;
+
+      return `
+        <div class="min-h-screen flex flex-col items-center justify-center bg-[#0a0a0f]">
+          <h2 class="text-3xl mb-10 text-gray-300 font-light">Quem está assistindo?</h2>
+          <div class="flex gap-5 flex-wrap justify-center">
+            ${profiles.map(p => `
+              <button onclick="selectProfile(${p.id})" class="group text-center transition-transform duration-300 hover:scale-105">
+                <div class="w-28 h-28 rounded overflow-hidden border-2 border-transparent group-hover:border-white transition-all mb-2 shadow-lg" style="background-color: #222">
+                  <img src="${p.avatar}" alt="${p.name}" class="w-full h-full object-cover">
+                </div>
+                <span class="text-gray-400 group-hover:text-white text-sm">${p.name}</span>
+              </button>
+            `).join('')}
+            ${profiles.length < 5 ? `
+              <button onclick="openAddProfile()" class="group text-center">
+                <div class="w-28 h-28 rounded bg-gray-900 border-2 border-gray-700 group-hover:border-white flex items-center justify-center transition-all mb-2">
+                  <svg class="w-12 h-12 text-gray-600 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                </div>
+                <span class="text-gray-400 group-hover:text-white text-sm">Adicionar Perfil</span>
+              </button>
+            ` : ''}
+          </div>
+          <button onclick="openManageProfiles()" class="mt-12 text-gray-500 border border-gray-700 px-6 py-2 text-sm hover:text-white hover:border-white transition-colors">
+            Gerenciar Perfis
+          </button>
+          <div id="modal-container"></div>
+        </div>
+      `;
+    }
+
+    function selectProfile(id) {
+      const profile = AppDB.currentUser.profiles.find(p => p.id === id);
+      if(profile) {
+        AppDB.currentProfile = profile;
+        saveDB();
+        render('main');
+      }
+    }
+
+    function openAddProfile() {
+      const container = document.getElementById('modal-container');
+      container.innerHTML = `
+        <div class="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+          <div class="bg-[#181818] p-8 rounded-lg w-full max-w-sm text-center">
+            <h3 class="text-xl mb-4 font-medium">Adicionar Perfil</h3>
+            <input type="text" id="new-profile-name" placeholder="Nome" class="input-style w-full py-2 px-3 rounded text-center mb-4">
+            <div class="flex justify-center gap-4">
+              <button onclick="document.getElementById('modal-container').innerHTML=''" class="bg-gray-600 hover:bg-gray-500 px-6 py-2 rounded text-sm">Cancelar</button>
+              <button onclick="saveNewProfile()" class="btn-primary px-6 py-2 rounded text-sm">Salvar</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+    
+    function saveNewProfile() {
+      const name = document.getElementById('new-profile-name').value;
+      if(name.length < 2) return;
+      const newProfile = {
+        id: Date.now(),
+        name: name,
+        avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${Math.random()>0.5? '6e2cf4' : 'e50914'}&color=fff`
+      };
+      AppDB.currentUser.profiles.push(newProfile);
+      saveDB();
+      render('profiles');
+    }
+
+    function openManageProfiles() {
+      const list = AppDB.currentUser.profiles.map(p => `
+        <div class="flex items-center justify-between bg-white/5 p-3 rounded mb-2">
+          <div class="flex items-center gap-3">
+            <img src="${p.avatar}" class="w-10 h-10 rounded">
+            <span>${p.name}</span>
+          </div>
+          ${!p.isMain ? `<button onclick="deleteProfile(${p.id})" class="text-red-500 text-sm hover:underline">Remover</button>` : '<span class="text-xs text-gray-500">Principal</span>'}
+        </div>
+      `).join('');
+      
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.onclick = (e) => { if(e.target === modal) modal.remove(); };
+      modal.innerHTML = `
+        <div class="modal-content p-8" style="max-width: 400px;">
+          <h2 class="font-display text-2xl mb-6 text-center">Gerenciar Perfis</h2>
+          ${list}
+          <button onclick="this.parentElement.parentElement.remove()" class="mt-4 w-full text-center text-gray-400 text-sm hover:text-white">Fechar</button>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    function deleteProfile(id) {
+      AppDB.currentUser.profiles = AppDB.currentUser.profiles.filter(p => p.id !== id);
+      saveDB();
+      render('profiles');
+    }
+
+    // =========================================================================
+    // MAIN APPLICATION LAYOUT
+    // =========================================================================
+
+    function renderMainApp() {
+      if(!AppDB.currentProfile) return render('profiles');
+      
+      return `
+        <!-- Header -->
+        <header id="main-header" class="fixed top-0 left-0 right-0 z-40 transition-all duration-500">
+          <div class="bg-gradient-to-b from-[#0a0a0f] via-[#0a0a0f]/90 to-transparent pb-20 pt-2">
+            <div class="container mx-auto px-4 md:px-10 flex items-center justify-between">
+              <div class="flex items-center gap-8">
+                <h1 class="font-display text-3xl text-white cursor-pointer" onclick="render('main')">LDX Play</h1>
+                <nav class="hidden md:flex items-center gap-6 text-sm text-gray-300">
+                  <a href="#" onclick="render('main')" class="hover:text-white transition-colors font-semibold text-white">Início</a>
+                  <a href="#" onclick="filterContent('series')" class="hover:text-white transition-colors">Séries</a>
+                  <a href="#" onclick="filterContent('movie')" class="hover:text-white transition-colors">Filmes</a>
+                  <a href="#" onclick="filterContent('mylist')" class="hover:text-white transition-colors">Minha Lista</a>
+                </nav>
+              </div>
+
+              <div class="flex items-center gap-5">
+                <!-- Search -->
+                <div class="relative">
+                  <button onclick="toggleSearch()" class="p-2 hover:bg-white/10 rounded-full transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                  </button>
+                  <div id="search-box" class="absolute right-0 top-full mt-2 w-80 bg-[#181818] border border-white/10 rounded shadow-2xl hidden">
+                    <input type="text" id="search-input" onkeyup="performSearch(event)" placeholder="Títulos, gente, gêneros" class="w-full bg-transparent px-4 py-3 text-sm focus:outline-none">
+                    <div id="search-results" class="max-h-80 overflow-y-auto hide-scrollbar"></div>
+                  </div>
+                </div>
+
+                <!-- Profile Menu -->
+                <div class="relative">
+                  <button onclick="toggleMenu()" class="flex items-center gap-2 hover:bg-white/10 p-1 rounded transition-colors">
+                    <img src="${AppDB.currentProfile.avatar}" alt="" class="w-8 h-8 rounded object-cover">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                  </button>
+                  <div id="profile-menu" class="absolute right-0 top-full mt-2 w-56 bg-[#181818] border border-white/10 rounded shadow-2xl hidden origin-top-right">
+                    <div class="py-2 border-b border-white/10">
+                      ${AppDB.currentUser.profiles.map(p => `
+                        <div onclick="selectProfile(${p.id})" class="flex items-center gap-3 px-4 py-2 hover:bg-white/10 cursor-pointer text-sm ${p.id === AppDB.currentProfile.id ? 'text-white font-semibold' : 'text-gray-400'}">
+                          <img src="${p.avatar}" class="w-6 h-6 rounded">
+                          ${p.name}
+                        </div>
+                      `).join('')}
+                    </div>
+                    <div class="py-2">
+                      <a href="#" onclick="openAdminPanel()" class="block px-4 py-2 hover:bg-white/10 text-sm text-purple-400 font-semibold">Admin: Adicionar Conteúdo</a>
+                      <a href="conta.html" class="block px-4 py-2 hover:bg-white/10 text-sm text-gray-300">Conta</a>
+                      <a href="ajuda.html" class="block px-4 py-2 hover:bg-white/10 text-sm text-gray-300">Central de Ajuda</a>
+                      <a href="#" onclick="logout()" class="block px-4 py-2 hover:bg-white/10 text-sm text-gray-300">Sair da conta</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        <!-- Content -->
+        <main id="main-container">
+          ${renderHomeContent()}
+        </main>
+
+        <!-- Footer -->
+        <footer class="border-t border-white/10 mt-20 py-12 text-gray-500 text-sm">
+          <div class="container mx-auto px-4 md:px-10 grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div>
+              <h4 class="font-semibold text-gray-300 mb-4">LDX Play</h4>
+              <p>Plataforma de streaming líder na América Latina.</p>
+            </div>
+            <div>
+              <h4 class="font-semibold text-gray-300 mb-4">Navegação</h4>
+              <ul class="space-y-2">
+                <li><a href="#" onclick="filterContent('movie')" class="hover:text-white">Filmes</a></li>
+                <li><a href="#" onclick="filterContent('series')" class="hover:text-white">Séries</a></li>
+                <li><a href="#" onclick="filterContent('mylist')" class="hover:text-white">Minha Lista</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 class="font-semibold text-gray-300 mb-4">Legal</h4>
+              <ul class="space-y-2">
+                <li><a href="termos.html" class="hover:text-white">Termos de Uso</a></li>
+                <li><a href="privacidade.html" class="hover:text-white">Privacidade</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 class="font-semibold text-gray-300 mb-4">Suporte</h4>
+              <ul class="space-y-2">
+                <li><a href="ajuda.html" class="hover:text-white">Central de Ajuda</a></li>
+              </ul>
+            </div>
+          </div>
+          <div class="text-center mt-8 text-gray-600 text-xs">
+            © 2024 LDX Play Entertainment, Inc.
+          </div>
+        </footer>
+        
+        <!-- Admin Modal Container -->
+        <div id="admin-modal-container"></div>
+      `;
+    }
+
+    // =========================================================================
+    // ADMIN PANEL
+    // =========================================================================
+
+    function openAdminPanel() {
+      const container = document.getElementById('admin-modal-container');
+      container.innerHTML = `
+        <div class="fixed inset-0 bg-black/90 z-50 flex items-start justify-center p-10 overflow-y-auto">
+          <div class="bg-[#181818] rounded-lg w-full max-w-3xl relative p-8 border border-purple-500/30 shadow-xl">
+            <button onclick="container.innerHTML=''" class="absolute top-4 right-4 text-gray-400 hover:text-white">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+            
+            <h2 class="font-display text-3xl mb-6 text-purple-400">Painel Administrativo LDX Play</h2>
+            <p class="text-gray-400 mb-6">Adicione novos filmes ou séries ao catálogo.</p>
+            
+            <form onsubmit="addNewContent(event)" class="space-y-4">
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm text-gray-300 mb-1">Título</label>
+                  <input type="text" id="new-title" class="input-style w-full py-2 px-3 rounded" required>
+                </div>
+                <div>
+                  <label class="block text-sm text-gray-300 mb-1">Ano</label>
+                  <input type="number" id="new-year" class="input-style w-full py-2 px-3 rounded" value="2024" required>
+                </div>
+              </div>
+              
+              <div>
+                <label class="block text-sm text-gray-300 mb-1">Sinopse</label>
+                <textarea id="new-desc" rows="2" class="input-style w-full py-2 px-3 rounded" required></textarea>
+              </div>
+
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm text-gray-300 mb-1">Tipo</label>
+                  <select id="new-type" class="input-style w-full py-2 px-3 rounded">
+                    <option value="movie">Filme</option>
+                    <option value="series">Série</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-sm text-gray-300 mb-1">Duração</label>
+                  <input type="text" id="new-duration" placeholder="ex: 2h 10min ou 3 Temporadas" class="input-style w-full py-2 px-3 rounded" required>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm text-gray-300 mb-1">URL do Pôster (Capa Vertical)</label>
+                <input type="url" id="new-img" placeholder="https://..." class="input-style w-full py-2 px-3 rounded" required>
+              </div>
+
+              <div>
+                <label class="block text-sm text-gray-300 mb-1">URL do Background (Banner Horizontal)</label>
+                <input type="url" id="new-bg" placeholder="https://..." class="input-style w-full py-2 px-3 rounded" required>
+              </div>
+
+              <div>
+                <label class="block text-sm text-gray-300 mb-1">URL do Vídeo (YouTube, Vimeo, MP4)</label>
+                <input type="url" id="new-video" placeholder="https://..." class="input-style w-full py-2 px-3 rounded">
+              </div>
+
+              <button type="submit" class="btn-primary w-full py-3 rounded font-semibold mt-4">
+                Adicionar ao Catálogo
+              </button>
+            </form>
+          </div>
+        </div>
+      `;
+    }
+
+    function addNewContent(e) {
+      e.preventDefault();
+      
+      const newContent = {
+        id: Date.now(),
+        title: document.getElementById('new-title').value,
+        year: document.getElementById('new-year').value,
+        desc: document.getElementById('new-desc').value,
+        type: document.getElementById('new-type').value,
+        duration: document.getElementById('new-duration').value,
+        img: document.getElementById('new-img').value,
+        bg: document.getElementById('new-bg').value,
+        videoUrl: document.getElementById('new-video').value,
+        rating: Math.floor(Math.random() * 20 + 80) + '%',
+        genres: ['Drama'],
+        top10: false
+      };
+
+      AppDB.content.unshift(newContent);
+      saveDB();
+      
+      document.getElementById('admin-modal-container').innerHTML = '';
+      render('main');
+      alert('Conteúdo adicionado com sucesso!');
+    }
+
+    // =========================================================================
+    // HOME CONTENT RENDERING
+    // =========================================================================
+
+    let heroIdx = 0;
+    function renderHomeContent() {
+      if(AppDB.content.length === 0) return '<div class="pt-40 text-center text-gray-400">Nenhum conteúdo disponível. Use o Painel Admin.</div>';
+
+      return `
+        <section id="hero-section" class="relative h-[85vh] w-full overflow-hidden">
+          ${renderHero()}
+        </section>
+        <section class="relative z-10 -mt-40 pb-20 space-y-6">
+          <div id="content-rows">
+            ${renderRows()}
+          </div>
+        </section>
+      `;
+    }
+
+    function renderHero() {
+      const featured = AppDB.content.filter(c => c.img && c.bg);
+      if(featured.length === 0) return '';
+      const item = featured[heroIdx % featured.length];
+      
+      return `
+        <div class="absolute inset-0 transition-opacity duration-1000" style="background: url('${item.bg}') center/cover no-repeat;">
+          <div class="hero-gradient absolute inset-0"></div>
+        </div>
+        <div class="relative z-10 h-full flex items-center">
+          <div class="container mx-auto px-4 md:px-10">
+            <div class="max-w-xl pt-20">
+              <h1 class="font-display text-5xl md:text-7xl mb-4 leading-none">${item.title}</h1>
+              <div class="flex items-center gap-3 text-sm mb-4 text-gray-300">
+                <span class="text-green-400 font-bold">${item.rating}</span>
+                <span>${item.year}</span>
+                <span class="border border-white/30 px-1 text-xs py-px">${item.type === 'series' ? 'SÉRIE' : 'FILME'}</span>
+                <span class="text-gray-400">${item.duration}</span>
+              </div>
+              <p class="text-sm md:text-base text-gray-200 mb-6 line-clamp-3">${item.desc}</p>
+              <div class="flex gap-3">
+                <button onclick="playItem(${item.id})" class="flex items-center gap-2 bg-white text-black px-8 py-3 rounded font-semibold hover:bg-white/80 transition-all transform hover:scale-105 shadow-lg">
+                  <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                  Assistir
+                </button>
+                <button onclick="openDetail(${item.id})" class="flex items-center gap-2 bg-gray-500/70 px-8 py-3 rounded font-semibold hover:bg-gray-500/50 transition-all backdrop-blur-sm">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  Mais Informações
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderRows() {
+      const rows = [
+        { title: "Top 10 no Brasil", filter: c => c.top10, type: 'top10' },
+        { title: "Adicionados Recentemente", filter: c => true, type: 'row' }
+      ];
+
+      return rows.map(row => {
+        const items = AppDB.content.filter(row.filter);
+        if(items.length === 0) return '';
+        
+        if(row.type === 'top10') {
+          return `
+            <div class="content-row container mx-auto px-4 md:px-10 relative">
+              <h3 class="text-lg md:text-xl font-semibold mb-1">${row.title}</h3>
+              <div class="flex items-end overflow-x-auto hide-scrollbar py-4 pl-2">
+                ${items.slice(0, 10).map((item, i) => `
+                  <div class="flex items-end flex-shrink-0 mr-6 group cursor-pointer" onclick="openDetail(${item.id})">
+                    <span class="top10-number">${i+1}</span>
+                    <div class="poster-card">
+                      <img src="${item.img}" alt="${item.title}">
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `;
+        }
+
+        return `
+          <div class="content-row container mx-auto px-4 md:px-10 relative group">
+            <h3 class="text-lg md:text-xl font-semibold mb-1">${row.title}</h3>
+            <div class="relative">
+              <div class="row-nav left" onclick="scrollRow(this, -1)"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg></div>
+              <div class="flex overflow-x-auto hide-scrollbar py-4 gap-2">
+                ${items.map(item => `
+                  <div onclick="openDetail(${item.id})" class="poster-card cursor-pointer">
+                    <img src="${item.img}" alt="${item.title}">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black via-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-3">
+                      <div>
+                        <p class="font-semibold text-sm">${item.title}</p>
+                      </div>
+                    </div>
+                  </div>
+                `).join('')}
+              </div>
+              <div class="row-nav right" onclick="scrollRow(this, 1)"><svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function initMainEvents() {
+      clearInterval(heroInterval);
+      heroInterval = setInterval(() => {
+        heroIdx++;
+        const hs = document.getElementById('hero-section');
+        if(hs) hs.innerHTML = renderHero();
+      }, 8000);
+      window.addEventListener('scroll', handleScroll);
+    }
+
+    function handleScroll() {
+      const h = document.getElementById('main-header');
+      if(!h) return;
+      if(window.scrollY > 50) { h.classList.add('bg-[#0a0a0f]/95', 'backdrop-blur-md'); h.classList.remove('bg-gradient-to-b', 'from-[#0a0a0f]', 'via-[#0a0a0f]/90', 'to-transparent'); }
+      else { h.classList.remove('bg-[#0a0a0f]/95', 'backdrop-blur-md'); h.classList.add('bg-gradient-to-b', 'from-[#0a0a0f]', 'via-[#0a0a0f]/90', 'to-transparent'); }
+    }
+
+    function scrollRow(btn, dir) {
+      const c = btn.parentElement.querySelector('.flex');
+      c.scrollBy({ left: c.clientWidth * 0.8 * dir, behavior: 'smooth' });
+    }
+
+    // =========================================================================
+    // FILTER & DETAIL
+    // =========================================================================
+
+    function filterContent(type) {
+      render('main'); 
+      setTimeout(() => {
+        const mc = document.getElementById('main-container');
+        let items = [];
+        let title = "";
+        if(type === 'movie') { items = AppDB.content.filter(c => c.type === 'movie'); title = "Filmes"; }
+        else if(type === 'series') { items = AppDB.content.filter(c => c.type === 'series'); title = "Séries"; }
+        else if(type === 'mylist') { items = AppDB.content.filter(c => AppDB.myList.includes(c.id)); title = "Minha Lista"; }
+
+        mc.innerHTML = `
+          <div class="pt-32 pb-20 bg-[#0a0a0f]">
+            <div class="container mx-auto px-4 md:px-10">
+              <h2 class="font-display text-4xl md:text-5xl mb-8">${title}</h2>
+              <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
+                ${items.map(item => `
+                  <div onclick="openDetail(${item.id})" class="cursor-pointer group relative">
+                    <img src="${item.img}" alt="${item.title}" class="w-full aspect-[2/3] object-cover rounded transition-all duration-300 group-hover:scale-105 group-hover:z-10 group-hover:shadow-xl">
+                  </div>
+                `).join('')}
+              </div>
+              ${items.length === 0 ? '<p class="text-gray-400 text-lg mt-10">Nenhum conteúdo encontrado.</p>' : ''}
+            </div>
+          </div>
+        `;
+      }, 50);
+    }
+
+    function openDetail(id) {
+      const item = AppDB.content.find(c => c.id === id);
+      if(!item) return;
+      const inList = AppDB.myList.includes(id);
+      const modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.onclick = (e) => { if(e.target === modal) modal.remove(); };
+      
+      modal.innerHTML = `
+        <div class="modal-content overflow-hidden relative">
+          <button onclick="this.parentElement.parentElement.remove()" class="absolute top-4 right-4 bg-[#181818] rounded-full p-1 hover:bg-gray-700 z-10">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+          <div class="relative h-96 bg-cover bg-center" style="background-image: url('${item.bg}')">
+            <div class="absolute inset-0 bg-gradient-to-t from-[#181818] via-transparent to-transparent"></div>
+            <div class="absolute bottom-8 left-8 right-8">
+              <h2 class="font-display text-5xl md:text-6xl mb-4 leading-none">${item.title}</h2>
+              <div class="flex gap-3">
+                <button onclick="playItem(${item.id})" class="flex items-center gap-2 bg-white text-black px-8 py-2 rounded font-semibold hover:bg-white/80 transition-colors shadow-lg">
+                  <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                  Assistir
+                </button>
+                <button onclick="toggleMyList(${item.id})" class="p-2 border-2 border-gray-400 rounded-full hover:border-white transition-colors">
+                   ${inList ? '<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>' : '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>'}
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="p-8 bg-gradient-to-b from-[#181818] to-[#0f0f14]">
+            <div class="grid md:grid-cols-3 gap-8">
+              <div class="md:col-span-2">
+                <div class="flex gap-4 text-sm mb-4">
+                  <span class="text-green-400 font-bold">${item.rating}</span>
+                  <span class="text-gray-400">${item.year}</span>
+                  <span class="text-gray-400">${item.duration}</span>
+                </div>
+                <p class="text-gray-300 leading-relaxed">${item.desc}</p>
+              </div>
+              <div class="text-sm">
+                <p class="text-gray-400 mb-1">Gêneros: <span class="text-white">${item.genres.join(', ')}</span></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    function toggleMyList(id) {
+      const idx = AppDB.myList.indexOf(id);
+      if(idx === -1) AppDB.myList.push(id);
+      else AppDB.myList.splice(idx, 1);
+      saveDB();
+      openDetail(id);
+    }
+
+    // =========================================================================
+    // PLAYER & SEARCH
+    // =========================================================================
+
+    function playItem(id) {
+      const item = AppDB.content.find(c => c.id === id);
+      if(!item) return;
+      
+      if(item.videoUrl) {
+          if(item.videoUrl.includes('youtube.com') || item.videoUrl.includes('youtu.be') || item.videoUrl.includes('vimeo.com')) {
+              window.open(item.videoUrl, '_blank');
+              alert('Abrindo vídeo externo em uma nova aba.');
+          } else {
+              render('player');
+              setTimeout(() => {
+                  document.getElementById('player-video-source').src = item.videoUrl;
+                  document.querySelector('video').load();
+              }, 100);
+          }
+      } else {
+          render('player');
+      }
+    }
+
+    function renderPlayer() {
+      return `
+        <div class="player-container" onclick="togglePlayPause()">
+          <video id="player-video" class="w-full h-full object-contain" controls autoplay>
+             <source id="player-video-source" src="" type="video/mp4">
+             Seu navegador não suporta vídeos HTML5.
+          </video>
+          <div class="player-controls">
+            <div class="flex justify-between items-center">
+               <button onclick="event.stopPropagation(); render('main')" class="flex items-center gap-2 hover:text-purple-400 transition-colors">
+                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                 Voltar
+               </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function toggleSearch() { document.getElementById('search-box').classList.toggle('hidden'); document.getElementById('search-input').focus(); }
+    function performSearch(e) {
+      const q = e.target.value.toLowerCase();
+      const resBox = document.getElementById('search-results');
+      if(q.length < 2) { resBox.innerHTML = ''; return; }
+      const found = AppDB.content.filter(c => c.title.toLowerCase().includes(q));
+      resBox.innerHTML = found.map(item => `
+        <div onclick="openDetail(${item.id}); document.getElementById('search-box').classList.add('hidden');" class="flex items-center gap-3 p-2 hover:bg-white/10 cursor-pointer">
+          <img src="${item.img}" class="w-10 h-14 object-cover rounded">
+          <div><p class="text-sm font-medium">${item.title}</p><p class="text-xs text-gray-400">${item.year}</p></div>
+        </div>
+      `).join('') || '<p class="p-4 text-sm text-gray-400">Nenhum resultado</p>';
+    }
+
+    function toggleMenu() { document.getElementById('profile-menu').classList.toggle('hidden'); }
+
+    // =========================================================================
+    // INIT
+    // =========================================================================
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        document.getElementById('intro-screen').classList.add('fade-out');
+        setTimeout(() => {
+          document.getElementById('intro-screen').style.display = 'none';
+          if(AppDB.currentUser && AppDB.currentProfile) render('main');
+          else if (AppDB.currentUser) render('profiles');
+          else render('auth');
+        }, 1000);
+      }, 2200);
+    });
+  </script>
+</body>
+</html>
